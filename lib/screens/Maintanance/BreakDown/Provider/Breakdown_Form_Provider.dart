@@ -21,7 +21,6 @@ class Breakdown_Form_Provider extends ChangeNotifier {
 
   bool isRunning = false;
 
-
   var weight;
   var length;
   var number;
@@ -126,7 +125,6 @@ class Breakdown_Form_Provider extends ChangeNotifier {
   List<String> ProcessList = ["Process A", "Process B", "Process C"];
   String? selectedProcess;
   bool isLoading=false;
-
 
 
   String? selectedCategory;
@@ -309,7 +307,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
       'Vary': "Breakdown",
       'Image_name': "Breakdown",
       'CO_CODE': coCode,
-      'UR_CODE': "2",
+      'UR_CODE': "1",
       'O_URN_No': urnNo,
       'Access_Token': token,
       'URN_No': URN_NO,
@@ -353,7 +351,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'Vary': "Breakdown",
         },
       );
@@ -575,7 +573,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/List_Of_Category_IN_Transfer params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -588,7 +586,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "frmBreakdown",
@@ -651,7 +649,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/Generate_New_DOC_No params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -664,7 +662,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': frmname,
@@ -730,7 +728,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/Department_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -743,7 +741,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "",
@@ -805,7 +803,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET BreakDown/Machine_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -818,7 +816,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "frmBreakdown",
@@ -891,7 +889,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET BreakDown/Send_To_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -904,7 +902,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "",
@@ -967,7 +965,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET BreakDown/Machine_sub_Head_detail_List( params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -980,7 +978,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "frmBreakdown",
@@ -1043,7 +1041,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET BreakDown/Breck_Details_List( params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -1056,7 +1054,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "frmBreakdown",
@@ -1120,7 +1118,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET BreakDown/Standard_Time_Breckdown( params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -1133,7 +1131,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "frmBreakdown",
@@ -1195,7 +1193,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
 
       final Map<String, dynamic> payload = {
         'CO_CODE': coCode,
-        'UR_CODE': "2",
+        'UR_CODE': "1",
         'Access_Token': token,
         'O_URN_No': urnNo,
         'URN_No': URN_NO,
@@ -1254,7 +1252,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
         'O_URN_No': urnNo,
         'Access_Token': token,
         'CO_CODE': coCode,
-        'UR_CODE': "2",
+        'UR_CODE': "1",
         'Vary': "Breakdown",
         'Sr_No': SR_No,
       };
@@ -1339,7 +1337,7 @@ class Breakdown_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'SR_No': Sr_no,
         },
       );

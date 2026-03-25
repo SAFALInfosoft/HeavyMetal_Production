@@ -76,6 +76,8 @@ class Recovery_Form_Provider extends ChangeNotifier {
   String selecteditemName="";
   String selecteditemName_ID="";
 
+  String Difference="";
+
   void clearProductForm() {
     productList.clear();
     product_Item_List.clear();
@@ -389,10 +391,12 @@ class Recovery_Form_Provider extends ChangeNotifier {
       final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
       final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
       final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
+      isLoading =true;
+      notifyListeners();
 
       debugPrint(
         '➡️ GET Transfer/List_Of_Category_IN_Transfer params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -405,10 +409,10 @@ class Recovery_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
-          'FrmName': "frmBreakdown",
+          'FrmName': "frmRecovery",
           'GridName': "",
           'SR_No': "",
           'Field_Name': "",
@@ -449,6 +453,74 @@ class Recovery_Form_Provider extends ChangeNotifier {
         }
       }
 
+      isLoading =false;
+
+      notifyListeners();
+      return data;
+    } catch (e) {
+      debugPrint('❌ FetchCategoryList Error: $e');
+      return null;
+    }
+  }
+
+
+  Future<Map<String, dynamic>?> fetchTimeDiffrenceFromAPI(String URN,String recoveryTime,String breakdownTime,) async {
+    try {
+      // Read stored values
+      final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
+      final token = await PreferenceManager.instance.getStringValue('Access_Token');
+      final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
+      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
+      final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
+      isLoading =true;
+      notifyListeners();
+
+      debugPrint(
+        '➡️ GET Recovery/Recovery_Time_Difference params: '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
+            'Break_Down_Time=$breakdownTime , Recovery_Time= $recoveryTime',
+      );
+
+      // API call
+      final response = await apiService.get(
+        'Recovery/Recovery_Time_Difference',
+        queryParameters: {
+          'URN_No': URN.toString(),
+          'O_URN_No': urnNo.toString(),
+          'Access_Token': Uri.encodeComponent(token).toString(),
+          'CO_CODE': coCode.toString(),
+          'UR_CODE': "1",
+          'Break_Down_Time': breakdownTime,
+          'Recovery_Time': recoveryTime,
+
+        },
+      );
+
+      // Handle response
+      final Map<String, dynamic> data =
+      response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
+
+      if (data['message'] == "User Id or Token is Invalid.") {
+        await PreferenceManager.instance.setBooleanValue("Login", false);
+        debugPrint("⚠️ Invalid token or user ID. Logged out.");
+      } else {
+        // Check if 'message' is a valid list
+        // if (data.containsKey('message') && data['message'] is List) {
+          if (data['settings']['success'] == "1") {
+            Difference = data['message'].toString();
+            log(Difference);
+            // Map category list with both value and code
+            notifyListeners();
+
+            // debugPrint("✅ Categories loaded: ${categoryName_List.length}");
+          } else {
+
+          }
+        // }
+      }
+
+      isLoading =false;
+
       notifyListeners();
       return data;
     } catch (e) {
@@ -468,7 +540,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/Generate_New_DOC_No params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -481,7 +553,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': frmname,
@@ -547,7 +619,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/Department_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -560,7 +632,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "frmRecovery",
@@ -622,7 +694,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET BreakDown/Machine_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -635,7 +707,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "frmRecovery",
@@ -708,7 +780,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET BreakDown/Send_To_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -721,7 +793,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "",
@@ -784,7 +856,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET BreakDown/Machine_sub_Head_detail_List( params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -797,7 +869,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "frmRecovery",
@@ -860,7 +932,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET BreakDown/Breck_Details_List( params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -873,7 +945,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "frmRecovery",
@@ -937,7 +1009,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET BreakDown/Standard_Time_Breckdown( params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -950,7 +1022,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "frmBreakdown",
@@ -1013,7 +1085,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/Item_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -1026,7 +1098,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': Search_Text,
           'TableName': "",
           'FrmName': "",
@@ -1088,7 +1160,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/Item_Unit_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -1101,7 +1173,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "",
@@ -1164,7 +1236,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
 
       final Map<String, dynamic> payload = {
         'CO_CODE': coCode,
-        'UR_CODE': "2",
+        'UR_CODE': "1",
         'Access_Token': token,
         'O_URN_No': urnNo,
         'URN_No': URN_NO,
@@ -1257,7 +1329,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
       final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
       final token = await PreferenceManager.instance.getStringValue('Access_Token');
       final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
-      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
+      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL');
       final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
       final response = await apiService.get(
         'Recovery/Get_Recovery_List',
@@ -1266,7 +1338,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'SR_No': Sr_no,
         },
       );
@@ -1304,11 +1376,7 @@ class Recovery_Form_Provider extends ChangeNotifier {
             product_Item_List = [];
           }
         }else{
-
-
         }
-
-
 
         notifyListeners();
 

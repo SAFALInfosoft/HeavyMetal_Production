@@ -1,10 +1,12 @@
 import 'dart:convert';
+// import 'dart:js';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../GlobalComponents/PreferenceManager.dart';
 import '../../../../GlobalComponents/api_service.dart';
+import '../../../Login_Screens/Login_Page.dart';
 import '../../../Production/Production_Form/Model/URN_No_Model.dart';
 
 
@@ -51,8 +53,8 @@ class Transfer_Memo_List_Provider extends ChangeNotifier {
     width = size.width;
   }
 
-  Future<void> init() async {
-    await getTransferMemoList();
+  Future<void> init(BuildContext context) async {
+    await getTransferMemoList(context);
   }
 
   final menuItems = [
@@ -93,7 +95,7 @@ class Transfer_Memo_List_Provider extends ChangeNotifier {
         'Production/Generate_URN_No',
         data: {
           'O_URN_No': urnNo,
-          'User_Id': "2",
+          'User_Id': "1",
           'Access_Token': token,
           'Co_Code': coCode,
           'Vary': "Transfer Memo",
@@ -133,7 +135,7 @@ class Transfer_Memo_List_Provider extends ChangeNotifier {
   }
 
 
-  Future<void> getTransferMemoList() async {
+  Future<void> getTransferMemoList(context) async {
     try {
       final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
       final token = await PreferenceManager.instance.getStringValue('Access_Token');
@@ -148,13 +150,22 @@ class Transfer_Memo_List_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'SR_No': "",
         },
       );
 
       final Map<String, dynamic> data =
       response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
+      if (data['message'] == "User Id or Token is Invalid.") {
+        await PreferenceManager.instance.setBooleanValue("Login", false);
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LoginPage()),
+        );
+        // clearMainForm();
+
+
+      }
 
       if (data['settings']?['success'] == "1" && data['message'] is List) {
         // ✅ Fill Production_List

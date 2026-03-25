@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:heavy_metal/screens/Login_Screens/Provider/Login_Page_Provider.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../widgets/AppBackground.dart';
 import '../../widgets/app_button.dart';
@@ -196,8 +197,40 @@ class LoginPage extends StatelessWidget {
                               ),
                             ),
                           ),
+
                         ],
-                      )
+                      ),
+                      SizedBox(height: provider.height * 0.02),
+
+                      GestureDetector(
+                        onTap: () async {
+                          final Uri url = Uri.parse("https://www.hmtl.in/privacy-policy");
+
+                          try {
+                            final success = await launchUrl(
+                              url,
+                              mode: LaunchMode.externalApplication,
+                            );
+
+                            if (!success) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text("Could not open Privacy Policy")),
+                              );
+                            }
+                          } catch (e) {
+                            debugPrint("Error launching URL: $e");
+                          }
+                        },
+                        child: Text(
+                          "Privacy Policy",
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.8),
+                            fontSize: provider.height * 0.017,
+                            fontWeight: FontWeight.w700,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),

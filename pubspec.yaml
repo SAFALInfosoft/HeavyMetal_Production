@@ -47,6 +47,7 @@ dependencies:
   flutter_slidable:
   http:
   path:
+  url_launcher: ^6.2.5
 #  record: ^5.0.4
 
 
@@ -87,6 +88,7 @@ flutter:
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
+
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:

@@ -2,10 +2,13 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:nb_utils/nb_utils.dart';
 
 import '../../../../../GlobalComponents/PreferenceManager.dart';
 import '../../../../../GlobalComponents/api_service.dart';
+import '../../../../Login_Screens/Login_Page.dart';
 import '../../../../Production/Production_Form/Model/URN_No_Model.dart';
+import '../../BreakDown_Form.dart';
 
 
 class BreakDown_List_Provider extends ChangeNotifier {
@@ -27,8 +30,8 @@ class BreakDown_List_Provider extends ChangeNotifier {
     width = size.width;
   }
 
-  Future<void> init() async {
-    await getBreakDownList();
+  Future<void> init(BuildContext context) async {
+    await getBreakDownList(context);
   }
 
   final menuItems = [
@@ -88,19 +91,19 @@ class BreakDown_List_Provider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> generateUrnNo() async {
+  Future<void> generateUrnNo(BuildContext context) async {
     try {
       final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
       final token = await PreferenceManager.instance.getStringValue('Access_Token');
       final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
-      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
+      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL');
       final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
 
       final response = await apiService.post(
         'Production/Generate_URN_No',
         data: {
           'O_URN_No': urnNo,
-          'User_Id': "2",
+          'User_Id': "1",
           'Access_Token': token,
           'Co_Code': coCode,
           'Vary': "Breakdown",
@@ -110,8 +113,52 @@ class BreakDown_List_Provider extends ChangeNotifier {
       final Map<String, dynamic> data =
       response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
 
+      if (data['settings'] != null && data['settings']['success'] == "0") {
+        final String msg = data['message'] ?? "Something went wrong";
+
+        showDialog(
+          context: context,
+          barrierDismissible: false, // user must press OK
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              // title: Text(
+              //   "Error",
+              //   style: TextStyle(
+              //     fontWeight: FontWeight.bold,
+              //     fontSize: 18,
+              //   ),
+              // ),
+              content: Text(
+                msg.toString(),
+                style: TextStyle(fontSize: 16),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close dialog
+                  },
+                  child: Text(
+                    "OK",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+
+        return;
+      }
+
       // 🧩 Merge all maps inside message[]
       if (data['message'] != null && data['message'] is List) {
+
         final merged = <String, dynamic>{};
         for (var item in data['message']) {
           if (item is Map<String, dynamic>) {
@@ -122,6 +169,9 @@ class BreakDown_List_Provider extends ChangeNotifier {
         generatedUrn = merged['URN_No'] ?? '';
         generatedDoc_No = merged['Doc_No'] ?? '';
         generatedCategory = merged['Category'] ?? '';
+        await Navigator.push(context,
+            MaterialPageRoute(builder: (context) => Breakdown_Form_Screen(URN_No :generatedUrn,DocNo:generatedDoc_No,Category:generatedCategory,Status:"Draft",Mode:"Add")));
+        isInitialized=false;
       } else {
         generatedUrn = null;
         generatedDoc_No = null;
@@ -140,7 +190,7 @@ class BreakDown_List_Provider extends ChangeNotifier {
   }
 
 
-  Future<void> getBreakDownList() async {
+  Future<void> getBreakDownList(context) async {
     try {
       final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
       final token = await PreferenceManager.instance.getStringValue('Access_Token');
@@ -155,7 +205,7 @@ class BreakDown_List_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'SR_No': "",
         },
       );
@@ -180,6 +230,10 @@ class BreakDown_List_Provider extends ChangeNotifier {
       } else {
         BreakDown_List = [];
         debugPrint("⚠️ No valid data found or success != 1");
+        await PreferenceManager.instance.setBooleanValue("Login", false);
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LoginPage()),
+        );
       }
 
       notifyListeners();

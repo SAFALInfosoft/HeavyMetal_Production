@@ -491,7 +491,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/List_Of_Category_IN_Transfer params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -504,7 +504,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': Search_text,
           'TableName': "",
           'FrmName': "frmTransferMemo",
@@ -568,7 +568,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/Generate_New_DOC_No params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -581,7 +581,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': token.toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': frmname,
@@ -647,7 +647,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/Wo_No_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -660,7 +660,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "",
@@ -723,7 +723,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/List_MemoType params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -736,7 +736,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "",
@@ -798,7 +798,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/Department_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -811,7 +811,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': Search_text,
           'TableName': "",
           'FrmName': "",
@@ -873,7 +873,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/Suppiler_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -886,7 +886,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "",
@@ -948,7 +948,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/Item_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -961,7 +961,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': Search_Text,
           'TableName': "",
           'FrmName': "",
@@ -1023,7 +1023,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/Item_Unit_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -1036,7 +1036,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "",
@@ -1100,7 +1100,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/Grade_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -1113,7 +1113,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "",
@@ -1175,7 +1175,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/Location_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -1188,7 +1188,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': Search_text,
           'TableName': "",
           'FrmName': "",
@@ -1250,7 +1250,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/Specification_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -1263,7 +1263,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "",
@@ -1325,7 +1325,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Transfer/Heat_No_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=2, '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
       );
@@ -1338,7 +1338,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
           'TableName': "",
           'FrmName': "",
@@ -1399,7 +1399,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
 
       final Map<String, dynamic> payload = {
         'CO_CODE': coCode,
-        'UR_CODE': "2",
+        'UR_CODE': "1",
         'Access_Token': token,
         'O_URN_No': urnNo,
         'URN_No': URN_NO,
@@ -1458,7 +1458,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'SR_No': Sr_no,
         },
       );

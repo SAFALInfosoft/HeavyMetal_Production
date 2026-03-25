@@ -22,7 +22,7 @@ class Transfer_Memo_List extends StatelessWidget {
     context.watch<Transfer_Memo_List_Provider>();
 
     if(Transfer_Memo_ListProvider.isInitialized==false){
-      Transfer_Memo_ListProvider.init();
+      Transfer_Memo_ListProvider.init(context);
       Transfer_Memo_ListProvider.isInitialized=true;
     }
 

@@ -199,6 +199,28 @@ class Recovery_Form_Screen extends StatelessWidget {
                                             ),
                                           ],
                                         ),
+                                        const SizedBox(height: 8),
+
+                                        /// Process Name
+                                        Row(
+                                          mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            const Text(
+                                              "Difference :",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black54,
+                                              ),
+                                            ),
+                                            Text(
+                                              provider.Difference ??
+                                                  '', // example if you have it
+                                              style: const TextStyle(
+                                                  color: Colors.black87),
+                                            ),
+                                          ],
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -471,6 +493,8 @@ class Recovery_Form_Screen extends StatelessWidget {
                                           "${pickedTime.format(context)}";
 
                                       provider.breakdownTimeController.text = formattedDateTime;
+                                      await provider.fetchTimeDiffrenceFromAPI(
+                                          URN_No.toString(),provider.RecoveryTimeController.text,provider.breakdownTimeController.text);
                                       provider.notifyListeners();
                                     }
                                   }
@@ -515,6 +539,8 @@ class Recovery_Form_Screen extends StatelessWidget {
                                           "${pickedTime.format(context)}";
 
                                       provider.RecoveryTimeController.text = formattedDateTime;
+                                      await provider.fetchTimeDiffrenceFromAPI(
+                                          URN_No.toString(),formattedDateTime,provider.breakdownTimeController.text);
                                       provider.notifyListeners();
                                     }
                                   }

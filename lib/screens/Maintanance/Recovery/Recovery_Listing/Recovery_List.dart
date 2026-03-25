@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:heavy_metal/screens/Dashboard/Provider/Dashboard_Provider.dart';
@@ -32,7 +33,7 @@ class _Recovery_ListState extends State<Recovery_List>
     final recoveryListProvider = context.watch<Recovery_List_Provider>();
 
     if (recoveryListProvider.isInitialized == false) {
-      recoveryListProvider.init();
+      recoveryListProvider.init(context);
       recoveryListProvider.isInitialized = true;
     }
 
@@ -76,6 +77,19 @@ class _Recovery_ListState extends State<Recovery_List>
           indicatorColor: Colors.white,
           labelColor: Colors.white,
           unselectedLabelColor: Colors.white70,
+          onTap: (index) {
+            final provider = context.read<Recovery_List_Provider>();
+
+            if (index == 0) {
+              // 🔹 Pending tab
+              provider.Recovery_List=[];
+              provider.getRecoveryList(context);
+            } else if (index == 1) {
+              // 🔹 Entry tab
+              provider.Recovery_Entry_List=[];
+              provider.getRecoveryEntryList(context);
+            }
+          },
           tabs: const [
             Tab(text: "Pending"),
             Tab(text: "Entry"),
@@ -103,6 +117,7 @@ class _Recovery_ListState extends State<Recovery_List>
                       context,
                       provider,
                       provider.filteredPendingList,
+                      "pending"
                     ),
                   ),
                 ],
@@ -121,14 +136,22 @@ class _Recovery_ListState extends State<Recovery_List>
                     provider.updateEntrySearch,
                   ),
                   Expanded(
-                    child: provider.filteredEntryList.isEmpty
-                        ? Center(child: Text("No Entry Found"))
+                    child: provider.isLoading ==true
+                        ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                        : provider.filteredEntryList.isEmpty
+                        ? const Center(
+                      child: Text("No Entry Found"),
+                    )
                         : _buildListView(
                       context,
                       provider,
                       provider.filteredEntryList,
+                      "entry"
                     ),
                   ),
+
                 ],
               );
             },
@@ -146,20 +169,24 @@ class _Recovery_ListState extends State<Recovery_List>
             builder: (context, provider, child) {
               return FloatingActionButton(
                 onPressed: () async {
-                  await provider.generateUrnNo();
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Recovery_Form_Screen(
-                        URN_No: provider.generatedUrn,
-                        DocNo: provider.generatedDoc_No,
-                        Category: provider.generatedCategory,
-                        Status: "Draft",
-                        Mode: "Add",
+                  await provider.generateUrnNo(context);
+                  if(provider.generatedUrn!= null){
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Recovery_Form_Screen(
+                          URN_No: provider.generatedUrn,
+                          DocNo: provider.generatedDoc_No,
+                          Category: provider.generatedCategory,
+                          Status: "Draft",
+                          Mode: "Add",
+                        ),
                       ),
-                    ),
-                  );
-                  provider.isInitialized = false;
+                    );
+                    provider.isInitialized = false;
+                  }
+
+
                 },
                 backgroundColor: Colors.transparent,
                 elevation: 0,
@@ -215,7 +242,7 @@ class _Recovery_ListState extends State<Recovery_List>
 
   /// 🔹 Reusable ListView Builder
   Widget _buildListView(
-      BuildContext context, Recovery_List_Provider provider, List<dynamic> list) {
+      BuildContext context, Recovery_List_Provider provider, List<dynamic> list,String type) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10),
       child: ListView.separated(
@@ -240,24 +267,28 @@ class _Recovery_ListState extends State<Recovery_List>
                     onPressed: (_) async {
                       BuildContext currentContext = context; // capture the parent context
 
-                      await provider.generateUrnNo();
+                      await provider.generateUrnNo(context);
                       await provider.Insert_Pending_TO_New(item["URN_No"]);
 
                       // Use currentContext (not context from builder)
                       if (!currentContext.mounted) return;
 
-                      Navigator.push(
-                        currentContext,
-                        MaterialPageRoute(
-                          builder: (_) => Recovery_Form_Screen(
-                            URN_No: provider.generatedUrn.toString(),
-                            DocNo: item["Doc_No"],
-                            Category: item["Category_Name"],
-                            Status: item["Status"],
-                            Mode: "Edit",
+                      if(provider.generatedUrn!= null){
+                        Navigator.push(
+                          currentContext,
+                          MaterialPageRoute(
+                            builder: (_) => Recovery_Form_Screen(
+                              URN_No: provider.generatedUrn.toString(),
+                              DocNo: item["Doc_No"],
+                              Category: item["Category_Name"],
+                              Status: item["Status"],
+                              Mode: "Edit",
+                            ),
                           ),
-                        ),
-                      ).then((value) => provider.isInitialized = false);
+                        ).then((value) => provider.isInitialized = false);
+                      }
+
+
 
 
                     },
@@ -322,6 +353,14 @@ class _Recovery_ListState extends State<Recovery_List>
                     InfoPair(label: "URN No", value: item["URN_No"]),
                     InfoPair(label: "Machine Name", value: item["MAchine_Name"]),
                     InfoPair(label: "Doc Date", value: item["Doc_Date"]),
+                    Visibility(
+                      visible: type=="pending",
+                        child: InfoPair(label: "Department", value: type=="pending"?item["Department"]:"")),
+                    Visibility(
+                      visible: type=="pending",
+                        child: InfoPair(label: "Send to", value: type=="pending"?item["Send to Department"]:"")),
+
+
                   ],
                 ),
               ),

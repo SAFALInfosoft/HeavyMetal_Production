@@ -39,6 +39,11 @@ class Production_Form_Provider extends ChangeNotifier {
 
   String? errorMessage;
 
+  bool isProcessing = false;
+
+  Timer? addTimer;
+  bool isAddPending = false;
+
   Future<void> init() async {
     if(_isProcesscard ==true){
       await _loadProcessCardList();
@@ -52,14 +57,14 @@ class Production_Form_Provider extends ChangeNotifier {
 
   void incrementAddCount(fieldstringJson) {
     addCount++;
-    startCountdown();
+
 
 
     notifyListeners();
   }
   void incrementAddCount_Drop(fieldstringJson) {
     addCount++;
-    startCountdown_Drop();
+
     // Update_Data(fieldstringJson);
 
     notifyListeners();
@@ -172,7 +177,6 @@ class Production_Form_Provider extends ChangeNotifier {
   List<String> gradeList = ["A", "B", "C", "D"];
   String? selectedGrade;
 
-
   // Specification dropdown
   List<String> specList = ["Spec 1", "Spec 2", "Spec 3"];
   String? selectedSpec;
@@ -259,7 +263,7 @@ class Production_Form_Provider extends ChangeNotifier {
         'Production/LIST_FOR_Process_Card',
         queryParameters: {
           'O_URN_No': urnNo.toString(),
-          'Access_Token': token.toString(),
+          'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
         },
       );
@@ -302,7 +306,7 @@ class Production_Form_Provider extends ChangeNotifier {
 
       debugPrint(
         '➡️ GET Production/LIST_OF_Machine params: '
-            'O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, '
+            'O_URN_No=$urnNo, Access_Token=${token}, CO_CODE=$coCode, '
             'URN_No=${selectedCard?.processCardUrnNo}',
       );
 
@@ -310,11 +314,13 @@ class Production_Form_Provider extends ChangeNotifier {
         'Production/LIST_OF_Machine',
         queryParameters: {
           'O_URN_No': urnNo,
-          'Access_Token': token,
+          'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode,
           'URN_No': selectedCard?.processCardUrnNo ?? '',
         },
       );
+
+
 
       final Map<String, dynamic> data =
       response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
@@ -351,7 +357,7 @@ class Production_Form_Provider extends ChangeNotifier {
         'Production/LIST_OF_Process',
         queryParameters: {
           'O_URN_No': urnNo,
-          'Access_Token': token,
+          'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode,
           'URN_No': selectedCard?.processCardUrnNo ?? '',
         },
@@ -380,31 +386,42 @@ class Production_Form_Provider extends ChangeNotifier {
 
   Future<void> generateUrnNo() async {
     try {
-      final urnNo  = await PreferenceManager.instance.getStringValue('Operator_URN_No');
-      final token  = await PreferenceManager.instance.getStringValue('Access_Token');
+      final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
+      final token = await PreferenceManager.instance.getStringValue('Access_Token');
       final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
       final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL');
+
       final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
 
       final response = await apiService.post(
         'Production/Generate_URN_No',
         data: {
           'O_URN_No': urnNo,
-          'User_Id': "2",
+          'User_Id': "1",
           'Access_Token': token,
           'Co_Code': coCode,
           'Vary': selectedvary,
         },
       );
 
-      // Convert to Map
       final Map<String, dynamic> data =
       response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
 
-      // Parse into model
+      /// ✅ Check success first
+      if (data['settings'] != null && data['settings']['success'] == "0") {
+        final String msg = data['message'] ?? "Something went wrong";
+
+        Fluttertoast.showToast(
+          msg: msg,
+          toastLength: Toast.LENGTH_LONG,
+        );
+
+        return;
+      }
+
+      /// Parse model only when success
       final generateUrnResponse = GenerateUrnResponse.fromJson(data);
 
-      // Store the first URN_No (if exists) in a variable
       if (generateUrnResponse.message.isNotEmpty) {
         generatedUrn = generateUrnResponse.message.first.urnNo;
         debugPrint('✅ Generated URN: $generatedUrn');
@@ -433,7 +450,7 @@ class Production_Form_Provider extends ChangeNotifier {
         'Production/Update_Data',
         data: {
           'CO_CODE': coCode,
-          'User_Id': "2",
+          'User_Id': "1",
           'Access_Token': token,
           'Vary': selectedvary,
           'O_URN_No': urnNo,
@@ -442,6 +459,7 @@ class Production_Form_Provider extends ChangeNotifier {
           'Location': selectedProcessUrn,
           'Sr_No': selectedSr_No,
           'FieldString': fieldstringJson,
+          'Machine_Name': selectedMachine,
         },
       );
 
@@ -488,10 +506,17 @@ class Production_Form_Provider extends ChangeNotifier {
         );
       }else{
         if(Mode == "Add"){
+          startCountdown();
           incrementAddCount(fieldstringJson);
         }else if(Mode == "Drop"){
+          startCountdown_Drop();
           incrementAddCount_Drop(fieldstringJson);
         }
+
+        Fluttertoast.showToast(
+          msg: data['message'].toString(),
+          toastLength: Toast.LENGTH_LONG,
+        );
 
       }
 
@@ -531,7 +556,7 @@ class Production_Form_Provider extends ChangeNotifier {
         qty: 0,
         Wo_No_Doc: '',
         Round_Bar_Qty: 0,
-        Size: 0,
+        Size: "",
 
       ),
     );
@@ -567,6 +592,7 @@ class Production_Form_Provider extends ChangeNotifier {
     selectedCard = null;
     waitSeconds=0;
     addCount=0;
+    errorMessage = "";
   }
 
 }

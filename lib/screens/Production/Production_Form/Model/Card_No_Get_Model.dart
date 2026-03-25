@@ -42,7 +42,7 @@ class ProcessCardMessage {
   final double qty;
   final String Wo_No_Doc;
   final double Round_Bar_Qty;
-  final double Size;
+  final String Size;
 
   ProcessCardMessage({
     required this.processCardUrnNo,
@@ -64,7 +64,7 @@ class ProcessCardMessage {
       Process_Doc_No: json['Process_Doc_No']?.toString() ?? '',
       qty: (json['Qty'] is num) ? (json['Qty'] as num).toDouble() : 0.0,
       Round_Bar_Qty: (json['Round_Bar_Qty'] is num) ? (json['Round_Bar_Qty'] as num).toDouble() : 0.0,
-      Size: (json['Size'] is num) ? (json['Size'] as num).toDouble() : 0.0,
+      Size: json['Size'] ,
     );
   }
 

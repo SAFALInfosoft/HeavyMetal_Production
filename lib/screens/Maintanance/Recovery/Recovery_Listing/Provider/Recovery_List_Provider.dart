@@ -2,9 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:path/path.dart';
 
 import '../../../../../GlobalComponents/PreferenceManager.dart';
 import '../../../../../GlobalComponents/api_service.dart';
+import '../../../../Login_Screens/Login_Page.dart';
 import '../../../../Production/Production_Form/Model/URN_No_Model.dart';
 
 
@@ -22,6 +24,8 @@ class Recovery_List_Provider extends ChangeNotifier {
   String? generatedCategory;
   String? generatedDoc_No;
 
+  bool isLoading =false;
+
   Recovery_List_Provider() {
     final context = NavKey.navKey.currentState!.context;
     final size = MediaQuery.of(context).size;
@@ -29,9 +33,9 @@ class Recovery_List_Provider extends ChangeNotifier {
     width = size.width;
   }
 
-  Future<void> init() async {
-    await getRecoveryList();
-    await getRecoveryEntryList();
+  Future<void> init(BuildContext context) async {
+    await getRecoveryList(context);
+    await getRecoveryEntryList(context);
   }
 
   final menuItems = [
@@ -114,8 +118,10 @@ class Recovery_List_Provider extends ChangeNotifier {
 
 
 
-  Future<void> generateUrnNo() async {
+  Future<void> generateUrnNo(BuildContext context) async {
     try {
+      isLoading =true;
+      notifyListeners();
       final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
       final token = await PreferenceManager.instance.getStringValue('Access_Token');
       final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
@@ -126,8 +132,8 @@ class Recovery_List_Provider extends ChangeNotifier {
         'Production/Generate_URN_No',
         data: {
           'O_URN_No': urnNo,
-          'User_Id': "2",
-          'Access_Token': token,
+          'User_Id': "1",
+          'Access_Token': token.toString(),
           'Co_Code': coCode,
           'Vary': "Recovery",
         },
@@ -135,6 +141,51 @@ class Recovery_List_Provider extends ChangeNotifier {
 
       final Map<String, dynamic> data =
       response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
+
+      if (data['settings'] != null && data['settings']['success'] == "0") {
+        final String msg = data['message'] ?? "Something went wrong";
+
+
+
+        showDialog(
+          context: context,
+          barrierDismissible: false, // user must press OK
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              // title: Text(
+              //   "Error",
+              //   style: TextStyle(
+              //     fontWeight: FontWeight.bold,
+              //     fontSize: 18,
+              //   ),
+              // ),
+              content: Text(
+                msg.toString(),
+                style: TextStyle(fontSize: 16),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close dialog
+                  },
+                  child: Text(
+                    "OK",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+
+        return;
+      }
 
       // 🧩 Merge all maps inside message[]
       if (data['message'] != null && data['message'] is List) {
@@ -158,6 +209,8 @@ class Recovery_List_Provider extends ChangeNotifier {
       debugPrint('✅ Doc No: $generatedDoc_No');
       debugPrint('✅ Category: $generatedCategory');
 
+      isLoading =false;
+
       notifyListeners();
     } catch (e, st) {
       debugPrint('❌ Generate URN Error: $e');
@@ -178,8 +231,8 @@ class Recovery_List_Provider extends ChangeNotifier {
         data: {
           'CO_CODE': coCode.toString(),
           'O_URN_No': urnNo,
-          'UR_CODE': "2",
-          'Access_Token': token,
+          'UR_CODE': "1",
+          'Access_Token': Uri.encodeComponent(token).toString(),
           'URN_No': generatedUrn,
           'SR_No': "",
           'Mode': "",
@@ -219,7 +272,7 @@ class Recovery_List_Provider extends ChangeNotifier {
   }
 
 
-  Future<void> getRecoveryList() async {
+  Future<void> getRecoveryList(context) async {
     try {
       final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
       final token = await PreferenceManager.instance.getStringValue('Access_Token');
@@ -227,13 +280,14 @@ class Recovery_List_Provider extends ChangeNotifier {
       final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
       final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
 
+
       final response = await apiService.get(
         'Recovery/Pending_Breakdown_To_Recovery',
         queryParameters: {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'item_filertext': "",
         },
       );
@@ -251,6 +305,8 @@ class Recovery_List_Provider extends ChangeNotifier {
           "Doc_Date": item["Doc Date"] ?? "",
           "MAchine_Name": item["Machine Name"] ?? "",
           "Category_Name": item["Category"] ?? "",
+          "Department": item["Department"] ?? "",
+          "Send to Department": item["Send to Department"] ?? "",
         })
             .toList();
 
@@ -258,6 +314,16 @@ class Recovery_List_Provider extends ChangeNotifier {
       } else {
         Recovery_List = [];
         debugPrint("⚠️ No valid data found or success != 1");
+
+        // if (data['message'] == "User Id or Token is Invalid.") {
+          await PreferenceManager.instance.setBooleanValue("Login", false);
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const LoginPage()),
+          );
+          // clearMainForm();
+
+
+        // }
       }
 
       notifyListeners();
@@ -268,7 +334,7 @@ class Recovery_List_Provider extends ChangeNotifier {
   }
 
 
-  Future<void> getRecoveryEntryList() async {
+  Future<void> getRecoveryEntryList(context) async {
     try {
       final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
       final token = await PreferenceManager.instance.getStringValue('Access_Token');
@@ -283,7 +349,7 @@ class Recovery_List_Provider extends ChangeNotifier {
           'URN_No': "",
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
-          'UR_CODE': "2",
+          'UR_CODE': "1",
           'SR_No': "",
         },
       );
@@ -308,6 +374,10 @@ class Recovery_List_Provider extends ChangeNotifier {
       } else {
         Recovery_Entry_List = [];
         debugPrint("⚠️ No valid data found or success != 1");
+        await PreferenceManager.instance.setBooleanValue("Login", false);
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LoginPage()),
+        );
       }
 
       notifyListeners();

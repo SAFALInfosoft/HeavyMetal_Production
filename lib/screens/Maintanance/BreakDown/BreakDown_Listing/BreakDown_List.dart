@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:heavy_metal/screens/Dashboard/Provider/Dashboard_Provider.dart';
+import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../Utils/Constants.dart';
@@ -21,7 +22,7 @@ class BreakDown_List extends StatelessWidget {
     context.watch<BreakDown_List_Provider>();
 
     if(BreakDown_ListProvider.isInitialized==false){
-      BreakDown_ListProvider.init();
+      BreakDown_ListProvider.init(context);
       BreakDown_ListProvider.isInitialized=true;
     }
 
@@ -231,11 +232,9 @@ class BreakDown_List extends StatelessWidget {
           builder: (BuildContext context, BreakDown_List_Provider provider, Widget? child) {
             return FloatingActionButton(
               onPressed: () async {
-                await provider.generateUrnNo();
+                await provider.generateUrnNo(context);
 
-                await Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Breakdown_Form_Screen(URN_No :provider.generatedUrn,DocNo:provider.generatedDoc_No,Category:provider.generatedCategory,Status:"Draft",Mode:"Add")));
-                BreakDown_ListProvider.isInitialized=false;
+
               },
               backgroundColor: Colors.transparent, // so gradient is visible
               elevation: 0,
