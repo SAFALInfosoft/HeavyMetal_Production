@@ -32,421 +32,242 @@ class Transfer_Memo_Form_Screen extends StatelessWidget {
       Transfer_Memo_FormProvider.init(generatedUrn,Mode,DocNo,Category);
       Transfer_Memo_FormProvider.isInitialized = true;
     }
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        titleSpacing: 0,
-        automaticallyImplyLeading: false,
-        iconTheme: const IconThemeData(color: Colors.white),
-        flexibleSpace: Container(
+    return PopScope(
+    canPop: false,
+    onPopInvoked: (didPop) async {
+      if (didPop) return;
+
+      final provider = Provider.of<Transfer_Memo_Form_Provider>(context, listen: false);
+
+
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Transfer_Memo_List()),
+      );
+      provider.clearMainForm();
+      provider.isInitialized = false;
+    },
+    // child: Scaffold(
+      child: Scaffold(
+        appBar: AppBar(
+          elevation: 0,
+          titleSpacing: 0,
+          automaticallyImplyLeading: false,
+          iconTheme: const IconThemeData(color: Colors.white),
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFFFA07A), Color(0xFFFF4C4C)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+          ),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              final provider = Provider.of<Transfer_Memo_Form_Provider>(context, listen: false);
+
+
+              provider.clearMainForm();
+
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => Transfer_Memo_List()),
+              );
+              Transfer_Memo_FormProvider.isInitialized = false;
+            },
+          ),
+          title: Consumer<Transfer_Memo_Form_Provider>(
+            builder: (BuildContext context, Transfer_Memo_Form_Provider provider,
+                Widget? child) {
+              return Padding(
+                padding: EdgeInsets.only(
+                  left: provider.width * 0.04,
+                  right: provider.width * 0.04,
+                ),
+                child: Text(
+                  "Transfer Memo",
+                  style: TextStyle(
+                    fontSize: provider.height * 0.03,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        body: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0xFFFFA07A), Color(0xFFFF4C4C)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              begin: Alignment.topCenter,
+              end: Alignment.topRight,
             ),
           ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            final provider = Provider.of<Transfer_Memo_Form_Provider>(context, listen: false);
-
-
-            provider.clearMainForm();
-
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => Transfer_Memo_List()),
-            );
-            Transfer_Memo_FormProvider.isInitialized = false;
-          },
-        ),
-        title: Consumer<Transfer_Memo_Form_Provider>(
-          builder: (BuildContext context, Transfer_Memo_Form_Provider provider,
-              Widget? child) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: provider.width * 0.04,
-                right: provider.width * 0.04,
-              ),
-              child: Text(
-                "Transfer Memo",
-                style: TextStyle(
-                  fontSize: provider.height * 0.03,
-                  fontWeight: FontWeight.bold,
+          child: Consumer<Transfer_Memo_Form_Provider>(
+            builder: (BuildContext page_context, Transfer_Memo_Form_Provider provider,
+                Widget? child) {
+              return Container(
+                height: provider.height,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30.0),
+                    topRight: Radius.circular(30.0),
+                  ),
                   color: Colors.white,
                 ),
-              ),
-            );
-          },
-        ),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFFFA07A), Color(0xFFFF4C4C)],
-            begin: Alignment.topCenter,
-            end: Alignment.topRight,
-          ),
-        ),
-        child: Consumer<Transfer_Memo_Form_Provider>(
-          builder: (BuildContext page_context, Transfer_Memo_Form_Provider provider,
-              Widget? child) {
-            return Container(
-              height: provider.height,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30.0),
-                  topRight: Radius.circular(30.0),
-                ),
-                color: Colors.white,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
 
-                    Consumer<Transfer_Memo_Form_Provider>(
-                      builder: (context, provider, _) {
-                        // final card = provider.selectedCard;
+                      Consumer<Transfer_Memo_Form_Provider>(
+                        builder: (context, provider, _) {
+                          // final card = provider.selectedCard;
 
-                        return Card(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: const BorderSide(
-                                color: Colors.purple, width: 1.5),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 8),
-
-                                /// W.O No
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text(
-                                      "URN:",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black54,
-                                      ),
-                                    ),
-                                    Text(
-                                      generatedUrn.toString(),
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                        // fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-
-                                /// Customer Name
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text(
-                                      "Status :",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black54,
-                                      ),
-                                    ),
-                                    Text(
-                                      Status.toString(),
-                                      style: const TextStyle(
-                                          color: Colors.black87),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-
-                                /// Process Name
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text(
-                                      "Doc No :",
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black54,
-                                      ),
-                                    ),
-                                    Text(
-                                      provider.Doc_No ??
-                                          '', // example if you have it
-                                      style: const TextStyle(
-                                          color: Colors.black87),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                          return Card(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              side: const BorderSide(
+                                  color: Colors.purple, width: 1.5),
                             ),
-                          ),
-                        );
-                      },
-                    ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const SizedBox(height: 8),
 
-                    /// 🔹 First Form Section (Transfer Memo Details)
-                    // Text("Transfer Memo Details",
-                    //     style: TextStyle(
-                    //         fontSize: provider.height * 0.022,
-                    //         fontWeight: FontWeight.bold)),
+                                  /// W.O No
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        "URN:",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black54,
+                                        ),
+                                      ),
+                                      Text(
+                                        generatedUrn.toString(),
+                                        style: const TextStyle(
+                                          color: Colors.black87,
+                                          // fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
 
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Transfer Memo Details",
-                          style: TextStyle(
-                            fontSize: provider.height * 0.022,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            provider.isTransferMemoExpanded
-                                ? Icons.expand_less
-                                : Icons.expand_more,
-                          ),
-                          onPressed: () {
-                            provider.toggleTransferMemoExpansion();
-                          },
-                        ),
-                      ],
-                    ),
+                                  /// Customer Name
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        "Status :",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black54,
+                                        ),
+                                      ),
+                                      Text(
+                                        Status.toString(),
+                                        style: const TextStyle(
+                                            color: Colors.black87),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
 
-                    if (provider.isTransferMemoExpanded) ...[
-                      const SizedBox(height: 10),
-
-                      GestureDetector(
-                        onTap: () async {
-                          final provider =
-                          Provider.of<Transfer_Memo_Form_Provider>(page_context,
-                              listen: false);
-
-                          if (provider.categoryName_List.isEmpty) {
-                            provider.isLoading = true;
-                            provider.notifyListeners();
-
-                            await provider.fetchCategoryListFromAPI(
-                                generatedUrn.toString(),"");
-
-                            provider.isLoading = false;
-                            provider.notifyListeners();
-                          }
-
-                          if (provider.categoryName_List.isNotEmpty) {
-                            showCategoryBottomSheet(
-                                page_context,
-                                provider.categoryName_List,
-                                "Category",
-                                generatedUrn.toString(),"Transfer Memo");
-                          }
-                        },
-                        child: AbsorbPointer(
-                          absorbing: true, // prevent manual typing
-                          child: TextFormField(
-                            readOnly: true,
-                            decoration:
-                            customInputDecoration("Category").copyWith(
-                              suffixIcon: const Icon(Icons.arrow_drop_down),
+                                  /// Process Name
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        "Doc No :",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black54,
+                                        ),
+                                      ),
+                                      Text(
+                                        provider.Doc_No ??
+                                            '', // example if you have it
+                                        style: const TextStyle(
+                                            color: Colors.black87),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                            controller: TextEditingController(
-                                text: Provider.of<Transfer_Memo_Form_Provider>(
-                                    page_context)
-                                    .selectedCategory ??
-                                    ""),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      TextFormField(
-                        controller: provider.dateController,
-                        readOnly: true,
-                        decoration: customInputDecoration("Doc Date"),
-                        onTap: () async {
-                          DateTime? pickedDate = await showDatePicker(
-                            context: page_context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime(2000),
-                            lastDate: DateTime(2100),
                           );
-                          if (pickedDate != null) {
-                            String formattedDate =
-                                "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
-                            provider.dateController.text = formattedDate;
-                            provider.notifyListeners();
-                          }
                         },
                       ),
 
-                      const SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: () async {
-                          final provider =
-                          Provider.of<Transfer_Memo_Form_Provider>(page_context,
-                              listen: false);
+                      /// 🔹 First Form Section (Transfer Memo Details)
+                      // Text("Transfer Memo Details",
+                      //     style: TextStyle(
+                      //         fontSize: provider.height * 0.022,
+                      //         fontWeight: FontWeight.bold)),
 
-                          if (provider.WO_No_List.isEmpty) {
-                            provider.isLoading = true;
-                            provider.notifyListeners();
-
-                            await provider
-                                .fetchWO_NoListFromAPI(generatedUrn.toString());
-
-                            provider.isLoading = false;
-                            provider.notifyListeners();
-                          }
-
-                          if (provider.WO_No_List.isNotEmpty) {
-                            showCategoryBottomSheet(page_context, provider.WO_No_List,
-                                "WO No", generatedUrn.toString(),"");
-                          }
-                        },
-                        child: AbsorbPointer(
-                          absorbing: true, // prevent manual typing
-                          child: TextFormField(
-                            readOnly: true,
-                            decoration: customInputDecoration("WO No").copyWith(
-                              suffixIcon: const Icon(Icons.arrow_drop_down),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Transfer Memo Details",
+                            style: TextStyle(
+                              fontSize: provider.height * 0.022,
+                              fontWeight: FontWeight.bold,
                             ),
-                            controller: TextEditingController(
-                                text: Provider.of<Transfer_Memo_Form_Provider>(
-                                    page_context)
-                                    .selectedWO_No ??
-                                    ""),
                           ),
-                        ),
-                      ),
-
-                      // DropdownButtonFormField<String>(
-                      //   value: provider.selectedWO_No,
-                      //   decoration: customInputDecoration("WO No"),
-                      //   items: provider.WO_No_List.map((item) {
-                      //     return DropdownMenuItem(value: item, child: Text(item));
-                      //   }).toList(),
-                      //   onChanged: (value) {
-                      //     provider.selectedWO_No = value!;
-                      //     provider.notifyListeners();
-                      //   },
-                      // ),
-
-                      const SizedBox(height: 8),
-
-                      // DropdownButtonFormField<String>(
-                      //   value: provider.selectedFinishedTubeSize,
-                      //   decoration: customInputDecoration("Finished Tube Size"),
-                      //   items: provider.Finished_Tube_Size_List.map((item) {
-                      //     return DropdownMenuItem(value: item, child: Text(item));
-                      //   }).toList(),
-                      //   onChanged: (value) {
-                      //     provider.selectedFinishedTubeSize = value!;
-                      //     provider.notifyListeners();
-                      //   },
-                      // ),
-                      TextFormField(
-                        controller: provider.FinishedTubeSize_Controller,
-                        decoration: customInputDecoration("Finished Tube Size"),
-                        maxLines: 1,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.newline,
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      GestureDetector(
-                        onTap: () async {
-                          final provider =
-                          Provider.of<Transfer_Memo_Form_Provider>(page_context,
-                              listen: false);
-
-                          if (provider.Memo_Type_List.isEmpty) {
-                            provider.isLoading = true;
-                            provider.notifyListeners();
-
-                            await provider.fetchMemoTypeListFromAPI(
-                                generatedUrn.toString());
-
-                            provider.isLoading = false;
-                            provider.notifyListeners();
-                          }
-
-                          if (provider.Memo_Type_List.isNotEmpty) {
-                            showCategoryBottomSheet(
-                                page_context,
-                                provider.Memo_Type_List,
-                                "Memo Type",
-                                generatedUrn.toString(),"");
-                          }
-                        },
-                        child: AbsorbPointer(
-                          absorbing: true, // prevent manual typing
-                          child: TextFormField(
-                            readOnly: true,
-                            decoration:
-                            customInputDecoration("Memo Type").copyWith(
-                              suffixIcon: const Icon(Icons.arrow_drop_down),
+                          IconButton(
+                            icon: Icon(
+                              provider.isTransferMemoExpanded
+                                  ? Icons.expand_less
+                                  : Icons.expand_more,
                             ),
-                            controller: TextEditingController(
-                                text: Provider.of<Transfer_Memo_Form_Provider>(
-                                    page_context)
-                                    .selectedMemoTyppe ??
-                                    ""),
+                            onPressed: () {
+                              provider.toggleTransferMemoExpansion();
+                            },
                           ),
-                        ),
+                        ],
                       ),
 
-                      // DropdownButtonFormField<String>(
-                      //   value: provider.selectedMemoTyppe,
-                      //   decoration: customInputDecoration("Memo Type"),
-                      //   items: provider.Memo_Type_List.map((item) {
-                      //     return DropdownMenuItem(value: item, child: Text(item));
-                      //   }).toList(),
-                      //   onChanged: (value) {
-                      //     provider.selectedMemoTyppe = value!;
-                      //     provider.notifyListeners();
-                      //   },
-                      // ),
+                      if (provider.isTransferMemoExpanded) ...[
+                        const SizedBox(height: 10),
 
-                      const SizedBox(height: 8),
-
-                      Visibility(
-                        visible: provider.selectedMemoTyppe != "External",
-                        child: GestureDetector(
+                        GestureDetector(
                           onTap: () async {
                             final provider =
                             Provider.of<Transfer_Memo_Form_Provider>(page_context,
                                 listen: false);
 
-                            if (provider.Department_List.isEmpty) {
+                            if (provider.categoryName_List.isEmpty) {
                               provider.isLoading = true;
                               provider.notifyListeners();
 
-                              await provider.fetchDepartmentListFromAPI(
+                              await provider.fetchCategoryListFromAPI(
                                   generatedUrn.toString(),"");
 
                               provider.isLoading = false;
                               provider.notifyListeners();
                             }
 
-                            if (provider.Department_List.isNotEmpty) {
+                            if (provider.categoryName_List.isNotEmpty) {
                               showCategoryBottomSheet(
                                   page_context,
-                                  provider.Department_List,
-                                  "Department",
-                                  generatedUrn.toString(),"",);
+                                  provider.categoryName_List,
+                                  "Category",
+                                  generatedUrn.toString(),"Transfer Memo");
                             }
                           },
                           child: AbsorbPointer(
@@ -454,54 +275,175 @@ class Transfer_Memo_Form_Screen extends StatelessWidget {
                             child: TextFormField(
                               readOnly: true,
                               decoration:
-                              customInputDecoration("Department").copyWith(
+                              customInputDecoration("Category").copyWith(
                                 suffixIcon: const Icon(Icons.arrow_drop_down),
                               ),
                               controller: TextEditingController(
                                   text: Provider.of<Transfer_Memo_Form_Provider>(
                                       page_context)
-                                      .selectedDepartment ??
+                                      .selectedCategory ??
                                       ""),
                             ),
                           ),
                         ),
-                      ),
-                      // DropdownButtonFormField<String>(
-                      //   value: provider.selectedDepartment,
-                      //   decoration: customInputDecoration("Department"),
-                      //   items: provider.Department_List.map((item) {
-                      //     return DropdownMenuItem(value: item, child: Text(item));
-                      //   }).toList(),
-                      //   onChanged: (value) {
-                      //     provider.selectedDepartment = value!;
-                      //     provider.notifyListeners();
-                      //   },
-                      // ),
-                      const SizedBox(height: 8),
-                      Visibility(
-                        visible: provider.selectedMemoTyppe != "Internal",
-                        child: GestureDetector(
+
+                        const SizedBox(height: 8),
+
+                        TextFormField(
+                          controller: provider.dateController,
+                          readOnly: true,
+                          decoration: customInputDecoration("Doc Date"),
+                          onTap: () async {
+                            DateTime? pickedDate = await showDatePicker(
+                              context: page_context,
+                              initialDate: DateTime.now(),
+                              firstDate: DateTime(2000),
+                              lastDate: DateTime(2100),
+                            );
+                            if (pickedDate != null) {
+                              String formattedDate =
+                                  "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
+                              provider.dateController.text = formattedDate;
+                              provider.notifyListeners();
+                            }
+                          },
+                        ),
+
+                        const SizedBox(height: 8),
+                        GestureDetector(
                           onTap: () async {
                             final provider =
                             Provider.of<Transfer_Memo_Form_Provider>(page_context,
                                 listen: false);
 
-                            if (provider.Party_List.isEmpty) {
+                            // if (provider.WO_No_List.isEmpty) {
                               provider.isLoading = true;
                               provider.notifyListeners();
 
                               await provider
-                                  .fetchPartyListFromAPI(generatedUrn.toString());
+                                  .fetchWO_NoListFromAPI(generatedUrn.toString());
+
+                              provider.isLoading = false;
+                              provider.notifyListeners();
+                            // }
+
+                            if (provider.WO_No_List.isNotEmpty) {
+                              showCategoryBottomSheet(page_context, provider.WO_No_List,
+                                  "WO No", generatedUrn.toString(),"");
+                            }
+                          },
+                          child: AbsorbPointer(
+                            absorbing: true, // prevent manual typing
+                            child: TextFormField(
+                              readOnly: true,
+                              decoration: customInputDecoration("WO No").copyWith(
+                                suffixIcon: const Icon(Icons.arrow_drop_down),
+                              ),
+                              controller: TextEditingController(
+                                  text: Provider.of<Transfer_Memo_Form_Provider>(
+                                      page_context)
+                                      .selectedWO_No ??
+                                      ""),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: () async {
+                            final provider =
+                            Provider.of<Transfer_Memo_Form_Provider>(page_context,
+                                listen: false);
+
+                            // if (provider.WO_No_List.isEmpty) {
+                              provider.isLoading = true;
+                              provider.notifyListeners();
+
+                              await provider
+                                  .fetchWO_Line_ItemListFromAPI(generatedUrn.toString(),provider.selectedWO_No.toString());
+
+                              provider.isLoading = false;
+                              provider.notifyListeners();
+                            // }
+
+                            if (provider.WO_Line_Item_List.isNotEmpty) {
+                              showCategoryBottomSheet(page_context, provider.WO_Line_Item_List,
+                                  "WO Line Item", generatedUrn.toString(),"");
+                            }
+                          },
+                          child: AbsorbPointer(
+                            absorbing: true, // prevent manual typing
+                            child: TextFormField(
+                              readOnly: true,
+                              decoration: customInputDecoration("WO Line Item").copyWith(
+                                suffixIcon: const Icon(Icons.arrow_drop_down),
+                              ),
+                              controller: TextEditingController(
+                                  text: Provider.of<Transfer_Memo_Form_Provider>(
+                                      page_context)
+                                      .selectedWO_Line_Item_No ??
+                                      ""),
+                            ),
+                          ),
+                        ),
+
+                        // DropdownButtonFormField<String>(
+                        //   value: provider.selectedWO_No,
+                        //   decoration: customInputDecoration("WO No"),
+                        //   items: provider.WO_No_List.map((item) {
+                        //     return DropdownMenuItem(value: item, child: Text(item));
+                        //   }).toList(),
+                        //   onChanged: (value) {
+                        //     provider.selectedWO_No = value!;
+                        //     provider.notifyListeners();
+                        //   },
+                        // ),
+
+                        const SizedBox(height: 8),
+
+                        // DropdownButtonFormField<String>(
+                        //   value: provider.selectedFinishedTubeSize,
+                        //   decoration: customInputDecoration("Finished Tube Size"),
+                        //   items: provider.Finished_Tube_Size_List.map((item) {
+                        //     return DropdownMenuItem(value: item, child: Text(item));
+                        //   }).toList(),
+                        //   onChanged: (value) {
+                        //     provider.selectedFinishedTubeSize = value!;
+                        //     provider.notifyListeners();
+                        //   },
+                        // ),
+                        TextFormField(
+                          controller: provider.FinishedTubeSize_Controller,
+                          decoration: customInputDecoration("Finished Tube Size"),
+                          maxLines: 1,
+                          readOnly: true,
+                          keyboardType: TextInputType.emailAddress,
+                          textInputAction: TextInputAction.newline,
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        GestureDetector(
+                          onTap: () async {
+                            final provider =
+                            Provider.of<Transfer_Memo_Form_Provider>(page_context,
+                                listen: false);
+
+                            if (provider.Memo_Type_List.isEmpty) {
+                              provider.isLoading = true;
+                              provider.notifyListeners();
+
+                              await provider.fetchMemoTypeListFromAPI(
+                                  generatedUrn.toString());
 
                               provider.isLoading = false;
                               provider.notifyListeners();
                             }
 
-                            if (provider.Party_List.isNotEmpty) {
+                            if (provider.Memo_Type_List.isNotEmpty) {
                               showCategoryBottomSheet(
                                   page_context,
-                                  provider.Party_List,
-                                  "Party Name",
+                                  provider.Memo_Type_List,
+                                  "Memo Type",
                                   generatedUrn.toString(),"");
                             }
                           },
@@ -510,284 +452,400 @@ class Transfer_Memo_Form_Screen extends StatelessWidget {
                             child: TextFormField(
                               readOnly: true,
                               decoration:
-                              customInputDecoration("Party Name").copyWith(
+                              customInputDecoration("Memo Type").copyWith(
                                 suffixIcon: const Icon(Icons.arrow_drop_down),
                               ),
                               controller: TextEditingController(
                                   text: Provider.of<Transfer_Memo_Form_Provider>(
                                       page_context)
-                                      .selectedPartyName ??
+                                      .selectedMemoTyppe ??
                                       ""),
                             ),
                           ),
                         ),
-                      ),
 
-                      // DropdownButtonFormField<String>(
-                      //   value: provider.selectedPartyName,
-                      //   decoration: customInputDecoration("Party Name"),
-                      //   items: provider.Party_List.map((item) {
-                      //     return DropdownMenuItem(value: item, child: Text(item));
-                      //   }).toList(),
-                      //   onChanged: (value) {
-                      //     provider.selectedPartyName = value!;
-                      //     provider.notifyListeners();
-                      //   },
-                      // ),
+                        // DropdownButtonFormField<String>(
+                        //   value: provider.selectedMemoTyppe,
+                        //   decoration: customInputDecoration("Memo Type"),
+                        //   items: provider.Memo_Type_List.map((item) {
+                        //     return DropdownMenuItem(value: item, child: Text(item));
+                        //   }).toList(),
+                        //   onChanged: (value) {
+                        //     provider.selectedMemoTyppe = value!;
+                        //     provider.notifyListeners();
+                        //   },
+                        // ),
 
-                      const SizedBox(height: 8),
+                        const SizedBox(height: 8),
 
-                      TextFormField(
-                        controller: provider.Remarks_Controller,
-                        decoration: customInputDecoration("Remarks"),
-                        maxLines: 3,
-                        keyboardType: TextInputType.multiline,
-                        textInputAction: TextInputAction.newline,
-                      ),
+                        Visibility(
+                          visible: provider.selectedMemoTyppe != "External",
+                          child: GestureDetector(
+                            onTap: () async {
+                              final provider =
+                              Provider.of<Transfer_Memo_Form_Provider>(page_context,
+                                  listen: false);
 
-                      const SizedBox(height: 20),
-                      // Appbutton(
-                      //     text: "Submit",
-                      //     onPressed: () {
-                      //       Map<String, dynamic> fieldString = {
-                      //         "Department": provider.selectedDepartment_ID?? "",
-                      //         "Doc_Date": provider.dateController.text,
-                      //         "Wo_No": provider.selectedWO_No_ID,
-                      //         "Finished_Tubes_Size": provider.FinishedTubeSize_Controller.text,
-                      //         "Memo_Type": provider.selectedMemoTyppe_ID ?? "",
-                      //         "AC_CODE": provider.selectedPartyName_ID ?? "",
-                      //         "Remarks": provider.Remarks_Controller.text,
-                      //         "IT_CODE": "",
-                      //         "Quantity": "",
-                      //         "Grade": "",
-                      //         "Specification": "",
-                      //         "Heat_No": "",
-                      //         "OD_MM": "",
-                      //         "THK_MIN": "",
-                      //         "THK_MAX": "",
-                      //         "THK_MM": "",
-                      //         "Length_MIN": "",
-                      //         "Length_MAX": "",
-                      //         "No_Of_Piece": "",
-                      //         "UOM": "",
-                      //         "Location": "",
-                      //         "To_Location": "",
-                      //         "Stock": "",
-                      //         "G_Remarks": "",
-                      //         "Rate": "",
-                      //         "Piece_length": "",
-                      //       };
-                      //
-                      //       print("📦 Field String: $fieldString");
-                      //       provider.submitForm(fieldString,generatedUrn.toString(),"Master","");
-                      //     }),
-                    ],
+                              if (provider.Department_List.isEmpty) {
+                                provider.isLoading = true;
+                                provider.notifyListeners();
 
-                    Divider(),
+                                await provider.fetchDepartmentListFromAPI(
+                                    generatedUrn.toString(),"");
 
+                                provider.isLoading = false;
+                                provider.notifyListeners();
+                              }
 
-
-                    /// 🔹 Second Form Section (Product Details)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Products",
-                          style: TextStyle(
-                            fontSize: provider.height * 0.024,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.blueGrey[800],
+                              if (provider.Department_List.isNotEmpty) {
+                                showCategoryBottomSheet(
+                                    page_context,
+                                    provider.Department_List,
+                                    "Department",
+                                    generatedUrn.toString(),"",);
+                              }
+                            },
+                            child: AbsorbPointer(
+                              absorbing: true, // prevent manual typing
+                              child: TextFormField(
+                                readOnly: true,
+                                decoration:
+                                customInputDecoration("Department").copyWith(
+                                  suffixIcon: const Icon(Icons.arrow_drop_down),
+                                ),
+                                controller: TextEditingController(
+                                    text: Provider.of<Transfer_Memo_Form_Provider>(
+                                        page_context)
+                                        .selectedDepartment ??
+                                        ""),
+                              ),
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        provider.productList.isEmpty
-                            ? Container(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 20),
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border:
-                                      Border.all(color: Colors.grey.shade300),
-                                ),
-                                child: const Text(
-                                  "No products added yet",
-                                  style: TextStyle(
-                                      color: Colors.grey, fontSize: 15),
-                                ),
-                              )
-                            : ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: provider.productList.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 10),
-                          itemBuilder: (context, index) {
-                            final product = provider.productList[index];
+                        // DropdownButtonFormField<String>(
+                        //   value: provider.selectedDepartment,
+                        //   decoration: customInputDecoration("Department"),
+                        //   items: provider.Department_List.map((item) {
+                        //     return DropdownMenuItem(value: item, child: Text(item));
+                        //   }).toList(),
+                        //   onChanged: (value) {
+                        //     provider.selectedDepartment = value!;
+                        //     provider.notifyListeners();
+                        //   },
+                        // ),
+                        const SizedBox(height: 8),
+                        Visibility(
+                          visible: provider.selectedMemoTyppe != "Internal",
+                          child: GestureDetector(
+                            onTap: () async {
+                              final provider =
+                              Provider.of<Transfer_Memo_Form_Provider>(page_context,
+                                  listen: false);
 
-                            return Slidable(
-                              startActionPane: ActionPane(
-                                  motion: const DrawerMotion(),
-                                  extentRatio: 0.4, // how wide the slide actions appear
-                                  children: [
-                                    SlidableAction(
-                                      onPressed: (_) async {
-                                        await provider.getTransferMemoList(generatedUrn.toString(), product["Sr_no"]);
-                                        // Use the context from your widget tree, not the SlidableAction callback
-                                        showProductForm(
-                                          page_context, // <-- main page context
-                                          provider,
-                                          generatedUrn.toString(),
-                                          product["Sr_no"],
-                                          index: index,
-                                        );
-                                      },
-                                      backgroundColor: Colors.blueAccent,
-                                      foregroundColor: Colors.white,
-                                      icon: Icons.edit,
-                                      label: 'Edit',
-                                    ),
-                                  ]
+                              if (provider.Party_List.isEmpty) {
+                                provider.isLoading = true;
+                                provider.notifyListeners();
+
+                                await provider
+                                    .fetchPartyListFromAPI(generatedUrn.toString());
+
+                                provider.isLoading = false;
+                                provider.notifyListeners();
+                              }
+
+                              if (provider.Party_List.isNotEmpty) {
+                                showCategoryBottomSheet(
+                                    page_context,
+                                    provider.Party_List,
+                                    "Party Name",
+                                    generatedUrn.toString(),"");
+                              }
+                            },
+                            child: AbsorbPointer(
+                              absorbing: true, // prevent manual typing
+                              child: TextFormField(
+                                readOnly: true,
+                                decoration:
+                                customInputDecoration("Party Name").copyWith(
+                                  suffixIcon: const Icon(Icons.arrow_drop_down),
+                                ),
+                                controller: TextEditingController(
+                                    text: Provider.of<Transfer_Memo_Form_Provider>(
+                                        page_context)
+                                        .selectedPartyName ??
+                                        ""),
                               ),
-                              child: Card(
-                                elevation: 3,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                color: Colors.white,
-                                shadowColor: Colors.grey.shade300,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(14.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                            ),
+                          ),
+                        ),
+
+                        // DropdownButtonFormField<String>(
+                        //   value: provider.selectedPartyName,
+                        //   decoration: customInputDecoration("Party Name"),
+                        //   items: provider.Party_List.map((item) {
+                        //     return DropdownMenuItem(value: item, child: Text(item));
+                        //   }).toList(),
+                        //   onChanged: (value) {
+                        //     provider.selectedPartyName = value!;
+                        //     provider.notifyListeners();
+                        //   },
+                        // ),
+
+                        const SizedBox(height: 8),
+
+                        TextFormField(
+                          controller: provider.Remarks_Controller,
+                          decoration: customInputDecoration("Remarks"),
+                          maxLines: 3,
+                          keyboardType: TextInputType.multiline,
+                          textInputAction: TextInputAction.newline,
+                        ),
+
+                        const SizedBox(height: 20),
+                        // Appbutton(
+                        //     text: "Submit",
+                        //     onPressed: () {
+                        //       Map<String, dynamic> fieldString = {
+                        //         "Department": provider.selectedDepartment_ID?? "",
+                        //         "Doc_Date": provider.dateController.text,
+                        //         "Wo_No": provider.selectedWO_No_ID,
+                        //         "Finished_Tubes_Size": provider.FinishedTubeSize_Controller.text,
+                        //         "Memo_Type": provider.selectedMemoTyppe_ID ?? "",
+                        //         "AC_CODE": provider.selectedPartyName_ID ?? "",
+                        //         "Remarks": provider.Remarks_Controller.text,
+                        //         "IT_CODE": "",
+                        //         "Quantity": "",
+                        //         "Grade": "",
+                        //         "Specification": "",
+                        //         "Heat_No": "",
+                        //         "OD_MM": "",
+                        //         "THK_MIN": "",
+                        //         "THK_MAX": "",
+                        //         "THK_MM": "",
+                        //         "Length_MIN": "",
+                        //         "Length_MAX": "",
+                        //         "No_Of_Piece": "",
+                        //         "UOM": "",
+                        //         "Location": "",
+                        //         "To_Location": "",
+                        //         "Stock": "",
+                        //         "G_Remarks": "",
+                        //         "Rate": "",
+                        //         "Piece_length": "",
+                        //       };
+                        //
+                        //       print("📦 Field String: $fieldString");
+                        //       provider.submitForm(fieldString,generatedUrn.toString(),"Master","");
+                        //     }),
+                      ],
+
+                      Divider(),
+
+
+
+                      /// 🔹 Second Form Section (Product Details)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Products",
+                            style: TextStyle(
+                              fontSize: provider.height * 0.024,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.blueGrey[800],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          provider.productList.isEmpty
+                              ? Container(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 20),
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: Colors.grey.shade100,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border:
+                                        Border.all(color: Colors.grey.shade300),
+                                  ),
+                                  child: const Text(
+                                    "No products added yet",
+                                    style: TextStyle(
+                                        color: Colors.grey, fontSize: 15),
+                                  ),
+                                )
+                              : ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: provider.productList.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 10),
+                            itemBuilder: (context, index) {
+                              final product = provider.productList[index];
+
+                              return Slidable(
+                                startActionPane: ActionPane(
+                                    motion: const DrawerMotion(),
+                                    extentRatio: 0.4, // how wide the slide actions appear
                                     children: [
-                                      // 🔹 Row 1 — Sr No + Item Name
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            "Sr No: ${product["Sr_no"] ?? '-'}",
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 14,
-                                              color: Colors.black87,
-                                            ),
-                                          ),
-                                          Text(
-                                            product["Item_name"] ?? "Unknown Item",
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 15,
-                                              color: Colors.blueAccent,
-                                            ),
-                                          ),
-                                        ],
+                                      SlidableAction(
+                                        onPressed: (_) async {
+                                          await provider.getTransferMemoList(generatedUrn.toString(), product["Sr_no"]);
+                                          // Use the context from your widget tree, not the SlidableAction callback
+                                          showProductForm(
+                                            page_context, // <-- main page context
+                                            provider,
+                                            generatedUrn.toString(),
+                                            product["Sr_no"],
+                                            index: index,
+                                          );
+                                        },
+                                        backgroundColor: Colors.blueAccent,
+                                        foregroundColor: Colors.white,
+                                        icon: Icons.edit,
+                                        label: 'Edit',
                                       ),
-
-                                      const SizedBox(height: 8),
-                                      const Divider(height: 8, color: Colors.grey),
-
-                                      // 🔹 Row 2 — Item ID
-                                      Row(
-                                        children: [
-                                          // const Icon(Icons.qr_code_2, color: Colors.grey, size: 18),
-                                          const SizedBox(width: 6),
-                                          Expanded(
-                                            child: Text(
-                                              "Item ID: ${product["Item_ID"] ?? '-'}",
+                                    ]
+                                ),
+                                child: Card(
+                                  elevation: 3,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  color: Colors.white,
+                                  shadowColor: Colors.grey.shade300,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(14.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        // 🔹 Row 1 — Sr No + Item Name
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              "Sr No: ${product["Sr_no"] ?? '-'}",
                                               style: const TextStyle(
-                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 14,
                                                 color: Colors.black87,
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      // 🔹 Row 3 — Quantity
-                                      Row(
-                                        children: [
-                                          // const Icon(Icons.inventory_2, color: Colors.green, size: 18),
-                                          const SizedBox(width: 6),
-                                          Text(
-                                            "Quantity: ${product["Quantity"]?.toString() ?? '-'}",
-                                            style: const TextStyle(
-                                              fontSize: 13.5,
-                                              color: Colors.black87,
+                                            Text(
+                                              product["Item_name"] ?? "Unknown Item",
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15,
+                                                color: Colors.blueAccent,
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                          ],
+                                        ),
+
+                                        const SizedBox(height: 8),
+                                        const Divider(height: 8, color: Colors.grey),
+
+                                        // 🔹 Row 2 — Item ID
+                                        Row(
+                                          children: [
+                                            // const Icon(Icons.qr_code_2, color: Colors.grey, size: 18),
+                                            const SizedBox(width: 6),
+                                            Expanded(
+                                              child: Text(
+                                                "Item ID: ${product["Item_ID"] ?? '-'}",
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                  color: Colors.black87,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        // 🔹 Row 3 — Quantity
+                                        Row(
+                                          children: [
+                                            // const Icon(Icons.inventory_2, color: Colors.green, size: 18),
+                                            const SizedBox(width: 6),
+                                            Text(
+                                              "Quantity: ${product["Quantity"]?.toString() ?? '-'}",
+                                              style: const TextStyle(
+                                                fontSize: 13.5,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 16),
-                        Appbutton(
-                          text: "Add Product",
-                          icon: Icons.add, // ✅ optional icon
-                          // color: Colors.blueAccent,
-                          onPressed: () {
-                            provider.clearProductForm();
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          Appbutton(
+                            text: "Add Product",
+                            icon: Icons.add, // ✅ optional icon
+                            // color: Colors.blueAccent,
+                            onPressed: () {
+                              provider.clearProductForm();
 
-                            showProductForm(page_context, provider, generatedUrn.toString(),"");
-                          },
-                        )
+                              showProductForm(page_context, provider, generatedUrn.toString(),"");
+                            },
+                          )
 
-                      ],
-                    ),
-                    Divider(),
-                    SizedBox(height: MediaQuery.of(context).size.height*0.03),
-                  ],
+                        ],
+                      ),
+                      Divider(),
+                      SizedBox(height: MediaQuery.of(context).size.height*0.03),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Consumer<Transfer_Memo_Form_Provider>(
-          builder: (BuildContext context, Transfer_Memo_Form_Provider provider, Widget? child) {
-            return Appbutton(
-                text: "Submit",
-                onPressed: () {
-                  Map<String, dynamic> fieldString = {
-                    "Department": provider.selectedDepartment_ID?? "",
-                    "Doc_Date": provider.dateController.text,
-                    "Wo_No": provider.selectedWO_No_ID,
-                    "Finished_Tubes_Size": provider.FinishedTubeSize_Controller.text,
-                    "Memo_Type": provider.selectedMemoTyppe_ID ?? "",
-                    "AC_CODE": provider.selectedPartyName_ID ?? "",
-                    "Remarks": provider.Remarks_Controller.text,
-                    "IT_CODE": "",
-                    "Quantity": "",
-                    "Grade": "",
-                    "Specification": "",
-                    "Heat_No": "",
-                    "OD_MM": "",
-                    "THK_MIN": "",
-                    "THK_MAX": "",
-                    "THK_MM": "",
-                    "Length_MIN": "",
-                    "Length_MAX": "",
-                    "No_Of_Piece": "",
-                    "UOM": "",
-                    "Location": "",
-                    "To_Location": "",
-                    "Stock": "",
-                    "G_Remarks": "",
-                    "Rate": "",
-                    "Piece_length": "",
-                  };
+        bottomNavigationBar: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Consumer<Transfer_Memo_Form_Provider>(
+            builder: (BuildContext context, Transfer_Memo_Form_Provider provider, Widget? child) {
+              return Appbutton(
+                  text: "Submit",
+                  onPressed: () {
+                    Map<String, dynamic> fieldString = {
+                      "Department": provider.selectedDepartment_ID?? "",
+                      "Doc_Date": provider.dateController.text,
+                      "Wo_No": provider.selectedWO_No_ID,
+                      "WO_Line_Item": provider.selectedWO_Line_Item_ID,
+                      "Finished_Tubes_Size": provider.FinishedTubeSize_Controller.text,
+                      "Memo_Type": provider.selectedMemoTyppe_ID ?? "",
+                      "AC_CODE": provider.selectedPartyName_ID ?? "",
+                      "Remarks": provider.Remarks_Controller.text,
+                      "IT_CODE": "",
+                      "Quantity": "",
+                      "Grade": "",
+                      "Specification": "",
+                      "Heat_No": "",
+                      "OD_MM": "",
+                      "THK_MIN": "",
+                      "THK_MAX": "",
+                      "THK_MM": "",
+                      "Length_MIN": "",
+                      "Length_MAX": "",
+                      "No_Of_Piece": "",
+                      "UOM": "",
+                      "Location": "",
+                      "To_Location": "",
+                      "Stock": "",
+                      "G_Remarks": "",
+                      "Rate": "",
+                      "Piece_length": "",
+                    };
 
-                  print("📦 Field String: $fieldString");
-                  provider.submitForm(fieldString,generatedUrn.toString(),"Master","");
-                });
-          },
+                    print("📦 Field String: $fieldString");
+                    provider.submitForm(fieldString,generatedUrn.toString(),"Master","");
+                  });
+            },
+          ),
         ),
       ),
     );
@@ -1183,13 +1241,14 @@ class Transfer_Memo_Form_Screen extends StatelessWidget {
                     text: isEdit ? "Update" : "Save",
                     onPressed: () {
                       Map<String, dynamic> fieldString = {
-                        "Department": "",
+                        "Department": provider.selectedDepartment_ID?? "",
                         // "date": provider.dateController.text,
-                        "Wo_No": "",
-                        "Finished_Tubes_Size": "",
-                        "memo_type":  "",
-                        "AC_CODE": "",
-                        "remarks": "",
+                        "Wo_No": provider.selectedWO_No_ID,
+                        "WO_Line_Item": provider.selectedWO_Line_Item_ID,
+                        "Finished_Tubes_Size": provider.FinishedTubeSize_Controller.text,
+                        "Memo_Type": provider.selectedMemoTyppe_ID ?? "",
+                        "AC_CODE": provider.selectedPartyName_ID ?? "",
+                        "Remarks": provider.Remarks_Controller.text,
                         "IT_CODE": provider.selecteditemName_ID?? "",
                         "Quantity": provider.weightController.text,
                         "Grade": provider.selectedGrade_ID,

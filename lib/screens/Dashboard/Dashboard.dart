@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:heavy_metal/screens/Dashboard/Provider/Dashboard_Provider.dart';
+import 'package:path/path.dart';
 import 'package:provider/provider.dart';
 
 import '../../GlobalComponents/PreferenceManager.dart';
@@ -9,6 +10,7 @@ import '../../widgets/_buildMenuCard.dart';
 import '../Login_Screens/Login_Page.dart';
 import '../Maintanance/Maintanance_Menu/Maintanance_Menu.dart';
 import '../Production/Production_Form/Production_Form_Screen.dart';
+import '../Profile/View/ProfileScreen.dart';
 import '../Transfer_Memo/Transfer_Memo_List/Transfer_Memo_List_Screen.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -16,6 +18,10 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+    final DashboardformProvider = context.watch<DashboardProvider>();
+    DashboardformProvider.init(context);
+
     return WillPopScope(
       onWillPop: () async {
         bool? exitApp = await showDialog(
@@ -84,24 +90,15 @@ class DashboardPage extends StatelessWidget {
               builder: (context, provider, child) {
                 return Padding(
                   padding: EdgeInsets.only(right: provider.width * 0.04),
-                  child: PopupMenuButton<String>(
-                    onSelected: (value) async {
-                      if (value == 'logout') {
-                        // Call your logout logic here
-                        // provider.logout();
-                        await PreferenceManager.instance.setBooleanValue("Login", false);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => LoginPage()),
-                        );
-                      }
+                  child: GestureDetector(
+                    onTap: () {
+                      provider.isInitialized = false;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => ProfileScreen()),
+                      );
+                      provider.notifyListeners();
                     },
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'logout',
-                        child: Text('Logout'),
-                      ),
-                    ],
                     child: CircleAvatar(
                       radius: provider.height * 0.022,
                       backgroundColor: Colors.white,
@@ -147,18 +144,23 @@ class DashboardPage extends StatelessWidget {
                       if (item["title"].toString() == "Production") {
                         Navigator.push(context,
                             MaterialPageRoute(builder: (context) => Production_Form_Screen()));
+                        provider.isInitialized = false;
                       } else if (item["title"].toString() == "Transfer Memo") {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => Transfer_Memo_List()),
+
                         );
+                        provider.isInitialized = false;
                       } else {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => Maintanance_Menu()),
                         );
+                        provider.isInitialized = false;
+                        provider.notifyListeners();
                       }
                     },
                   );

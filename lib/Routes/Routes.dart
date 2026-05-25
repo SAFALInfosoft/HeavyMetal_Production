@@ -6,9 +6,12 @@ import '../screens/Login_Screens/Provider/Login_Page_Provider.dart';
 import '../screens/Maintanance/BreakDown/BreakDown_Listing/Provider/BreakDown_List_Provider.dart';
 import '../screens/Maintanance/BreakDown/Provider/Breakdown_Form_Provider.dart';
 import '../screens/Maintanance/Maintanance_Menu/Provider/Maintanance_Menu_Provider.dart';
+import '../screens/Maintanance/Preventing/Preventing_Form/Provider/Preventing_Form_Provider.dart';
+import '../screens/Maintanance/Preventing/Preventing_Listing/Provider/Preventing_List_Provider.dart';
 import '../screens/Maintanance/Recovery/Recovery_Form/Provider/Recovery_Form_Provider.dart';
 import '../screens/Maintanance/Recovery/Recovery_Listing/Provider/Recovery_List_Provider.dart';
 import '../screens/Production/Production_Form/Provider/Production_Form_Provider.dart';
+import '../screens/Profile/provider/ProfileProvider.dart';
 import '../screens/Scanner/Provider/Scanner_Provider.dart';
 import '../screens/Transfer_Memo/Transfer_Memo_Form/Provider/Transfer_Memo_Form_Provider.dart';
 import '../screens/Transfer_Memo/Transfer_Memo_List/Provider/Transfer_Memo_List_Provider.dart';
@@ -27,6 +30,9 @@ MultiProvider multiProvider() {
       ChangeNotifierProvider(create: (_) => BreakDown_List_Provider()),
       ChangeNotifierProvider(create: (_) => Recovery_List_Provider()),
       ChangeNotifierProvider(create: (_) => Recovery_Form_Provider()),
+      ChangeNotifierProvider(create: (_) => ProfileProvider()),
+      ChangeNotifierProvider(create: (_) => Preventing_List_Provider()),
+      ChangeNotifierProvider(create: (_) => Preventing_Form_Provider()),
     ],
     child: MyApp(),
   );

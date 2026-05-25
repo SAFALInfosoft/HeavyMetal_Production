@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nb_utils/nb_utils.dart';
 import 'package:provider/provider.dart';
 import '../screens/Maintanance/BreakDown/Provider/Breakdown_Form_Provider.dart';
+import '../screens/Maintanance/Preventing/Preventing_Form/Provider/Preventing_Form_Provider.dart';
 import '../screens/Maintanance/Recovery/Recovery_Form/Provider/Recovery_Form_Provider.dart';
 import '../screens/Transfer_Memo/Transfer_Memo_Form/Provider/Transfer_Memo_Form_Provider.dart';
 
@@ -63,7 +64,8 @@ Future<void> showCategoryBottomSheet(
                               .contains(value.toLowerCase()))
                               .toList();
                         });
-                      }else if (fieldtype == "Location") {
+                      }
+                      else if (fieldtype == "Location") {
                         final provider = Provider.of<Transfer_Memo_Form_Provider>(
                           context,
                           listen: false,
@@ -83,7 +85,8 @@ Future<void> showCategoryBottomSheet(
                               .contains(value.toLowerCase()))
                               .toList();
                         });
-                      }else if (fieldtype == "Next Location") {
+                      }
+                      else if (fieldtype == "Next Location") {
                         final provider = Provider.of<Transfer_Memo_Form_Provider>(
                           context,
                           listen: false,
@@ -103,27 +106,54 @@ Future<void> showCategoryBottomSheet(
                               .contains(value.toLowerCase()))
                               .toList();
                         });
-                      }else if (fieldtype == "Category") {
-                        final provider = Provider.of<Transfer_Memo_Form_Provider>(
-                          context,
-                          listen: false,
-                        );
+                      }
+                      else if (fieldtype == "Category") {
 
-                        // Fetch new data from API
-                        await provider.fetchCategoryListFromAPI(
-                          generatedUrn.toString(),
-                          value.toString(),
-                        );
+                        if (frmname == "Transfer Memo") {
+                          final provider = Provider.of<Transfer_Memo_Form_Provider>(
+                            context,
+                            listen: false,
+                          );
 
-                        // Update filtered list with API response
-                        setState(() {
-                          filteredList = provider.categoryName_List
-                              .where((e) => e["Select_Value"]!
-                              .toLowerCase()
-                              .contains(value.toLowerCase()))
-                              .toList();
-                        });
-                      }else if (fieldtype == "Item Name") {
+                          // Fetch new data from API
+                          await provider.fetchCategoryListFromAPI(
+                            generatedUrn.toString(),
+                            value.toString(),
+                          );
+
+                          // Update filtered list with API response
+                          setState(() {
+                            filteredList = provider.categoryName_List
+                                .where((e) => e["Select_Value"]!
+                                .toLowerCase()
+                                .contains(value.toLowerCase()))
+                                .toList();
+                          });
+                        }
+                        else if (frmname == "Machine Maintenance"){
+                          final provider = Provider.of<Preventing_Form_Provider>(
+                            context,
+                            listen: false,
+                          );
+
+                          // Fetch new data from API
+                          await provider.fetchCategoryListFromAPI(
+                            generatedUrn.toString(),
+                            value.toString(),
+                          );
+
+                          // Update filtered list with API response
+                          setState(() {
+                            filteredList = provider.categoryName_List
+                                .where((e) => e["Select_Value"]!
+                                .toLowerCase()
+                                .contains(value.toLowerCase()))
+                                .toList();
+                          });
+                        }
+
+                      }
+                      else if (fieldtype == "Item Name") {
                         if (frmname == "Transfer Memo") {
                           final provider = Provider.of<Transfer_Memo_Form_Provider>(
                             context,
@@ -166,6 +196,55 @@ Future<void> showCategoryBottomSheet(
                                 .toList();
                           });
                         }
+
+                      }
+                      else if (fieldtype == "WO Line Item") {
+                        if (frmname == "Transfer Memo") {
+                          final provider = Provider.of<Transfer_Memo_Form_Provider>(
+                            context,
+                            listen: false,
+                          );
+
+                          // Fetch new data from API
+                          await provider.fetchWO_Line_ItemListFromAPI(
+                            generatedUrn.toString(),
+                            value.toString(),
+                          );
+
+                          // Update filtered list with API response
+                          setState(() {
+                            filteredList = provider.WO_Line_Item_List
+                                .where((e) => e["Select_Value"]!
+                                .toLowerCase()
+                                .contains(value.toLowerCase()))
+                                .toList();
+                          });
+                        }
+
+
+                      }
+                      else if (fieldtype == "Checklist Name") {
+
+                          final provider = Provider.of<Preventing_Form_Provider>(
+                            context,
+                            listen: false,
+                          );
+
+                          // Fetch new data from API
+                          await provider.fetchCheckListFromAPI(
+                            generatedUrn.toString(),
+                            value.toString(),
+                          );
+
+                          // Update filtered list with API response
+                          setState(() {
+                            filteredList = provider.Checklist_Name_List
+                                .where((e) => e["Select_Value"]!
+                                .toLowerCase()
+                                .contains(value.toLowerCase()))
+                                .toList();
+                          });
+
 
                       } else {
                         // Normal filtering for other field types
@@ -229,6 +308,20 @@ Future<void> showCategoryBottomSheet(
                                   generatedUrn.toString());
                               await provider.fetchDocNoFromAPI(
                                   generatedUrn.toString(), frmname);
+                            }else if (frmname == "Machine Maintenance") {
+                              final provider =
+                                  Provider.of<Preventing_Form_Provider>(
+                                context,
+                                listen: false,
+                              );
+                              provider.selectedCategory = item["Select_Value"];
+                              provider.selectedCategoryId =
+                                  item["Select_Value_Code"].toString();
+
+                              await provider.fetchCategoryListFromAPI(
+                                  generatedUrn.toString(),"");
+                              await provider.fetchDocNoFromAPI(
+                                  generatedUrn.toString(), frmname);
                             } else {
                               provider.selectedCategory = item["Select_Value"];
                               provider.selectedCategoryId =
@@ -246,7 +339,8 @@ Future<void> showCategoryBottomSheet(
                             // Call same API again
 
                             // Reopen updated bottom sheet automatically
-                          } else if (fieldtype == "WO No") {
+                          }
+                          else if (fieldtype == "WO No") {
                             provider.selectedWO_No_ID =
                                 item["Select_Value_Code"].toString();
                             provider.selectedWO_No =
@@ -255,7 +349,8 @@ Future<void> showCategoryBottomSheet(
                             provider.notifyListeners();
 
                             Navigator.pop(context);
-                          } else if (fieldtype == "Memo Type") {
+                          }
+                          else if (fieldtype == "Memo Type") {
                             provider.selectedMemoTyppe_ID =
                                 item["Select_Value_Code"].toString();
                             provider.selectedMemoTyppe =
@@ -273,7 +368,8 @@ Future<void> showCategoryBottomSheet(
                             provider.notifyListeners();
 
                             Navigator.pop(context);
-                          } else if (fieldtype == "Department") {
+                          }
+                          else if (fieldtype == "Department") {
 
                             if (frmname == "Breakdown") {
                               final provider =
@@ -287,7 +383,8 @@ Future<void> showCategoryBottomSheet(
                                   item["Select_Value"].toString();
                               log(provider.selectedDepartment);
                               provider.notifyListeners();
-                            }else if (frmname == "Recovery") {
+                            }
+                            else if (frmname == "Recovery") {
                               final provider =
                                   Provider.of<Recovery_Form_Provider>(
                                 context,
@@ -299,7 +396,21 @@ Future<void> showCategoryBottomSheet(
                                   item["Select_Value"].toString();
                               log(provider.selectedDepartment);
                               provider.notifyListeners();
-                            }else{
+                            }
+                            else if (frmname == "Machine Maintenance") {
+                              final provider =
+                                  Provider.of<Preventing_Form_Provider>(
+                                context,
+                                listen: false,
+                              );
+                              provider.selectedDepartment_ID =
+                                  item["Select_Value_Code"].toString();
+                              provider.selectedDepartment =
+                                  item["Select_Value"].toString();
+                              log(provider.selectedDepartment);
+                              provider.notifyListeners();
+                            }
+                            else{
                               provider.selectedDepartment_ID =
                                   item["Select_Value_Code"].toString();
                               provider.selectedDepartment =
@@ -309,7 +420,8 @@ Future<void> showCategoryBottomSheet(
                             provider.notifyListeners();
 
                             Navigator.pop(context);
-                          } else if (fieldtype == "Party Name") {
+                          }
+                          else if (fieldtype == "Party Name") {
                             provider.selectedPartyName_ID =
                                 item["Select_Value_Code"].toString();
                             provider.selectedPartyName =
@@ -318,7 +430,8 @@ Future<void> showCategoryBottomSheet(
                             provider.notifyListeners();
 
                             Navigator.pop(context);
-                          } else if (fieldtype == "Item Name") {
+                          }
+                          else if (fieldtype == "Item Name") {
                             if (frmname == "Transfer Memo") {
                               provider.selecteditemName_ID =
                                   item["Select_Value_Code"].toString();
@@ -352,7 +465,8 @@ Future<void> showCategoryBottomSheet(
                               Navigator.pop(context);
                             }
 
-                          } else if (fieldtype == "Grade") {
+                          }
+                          else if (fieldtype == "Grade") {
                             provider.selectedGrade_ID =
                                 item["Select_Value_Code"].toString();
                             provider.selectedGrade =
@@ -361,7 +475,8 @@ Future<void> showCategoryBottomSheet(
                             provider.notifyListeners();
 
                             Navigator.pop(context);
-                          } else if (fieldtype == "UOM") {
+                          }
+                          else if (fieldtype == "UOM") {
                             if (frmname == "Transfer Memo") {
                               provider.selectedUOM_ID =
                                   item["Select_Value_Code"].toString();
@@ -389,7 +504,8 @@ Future<void> showCategoryBottomSheet(
                               provider.UOM_List = [];
                             }
 
-                          } else if (fieldtype == "Location") {
+                          }
+                          else if (fieldtype == "Location") {
                             provider.selectedLocation_ID =
                                 item["Select_Value_Code"].toString();
                             provider.selectedLocation =
@@ -398,7 +514,8 @@ Future<void> showCategoryBottomSheet(
                             provider.notifyListeners();
 
                             Navigator.pop(context);
-                          } else if (fieldtype == "Next Location") {
+                          }
+                          else if (fieldtype == "Next Location") {
                             provider.selectedNextLocation_ID =
                                 item["Select_Value_Code"].toString();
                             provider.selectedNextLocation =
@@ -407,7 +524,8 @@ Future<void> showCategoryBottomSheet(
                             provider.notifyListeners();
 
                             Navigator.pop(context);
-                          } else if (fieldtype == "Specification") {
+                          }
+                          else if (fieldtype == "Specification") {
                             provider.selectedSpecification_ID =
                                 item["Select_Value_Code"].toString();
                             provider.selectedSpecification =
@@ -416,7 +534,8 @@ Future<void> showCategoryBottomSheet(
                             provider.notifyListeners();
 
                             Navigator.pop(context);
-                          } else if (fieldtype == "Heat No") {
+                          }
+                          else if (fieldtype == "Heat No") {
                             provider.selectedHeat_No_ID =
                                 item["Select_Value_Code"].toString();
                             provider.selectedHeat_No =
@@ -425,7 +544,8 @@ Future<void> showCategoryBottomSheet(
                             provider.notifyListeners();
 
                             Navigator.pop(context);
-                          }else if (fieldtype == "Machine Name") {
+                          }
+                          else if (fieldtype == "Machine Name") {
                             if (frmname == "Breakdown") {
                               final provider =
                               Provider.of<Breakdown_Form_Provider>(
@@ -454,9 +574,24 @@ Future<void> showCategoryBottomSheet(
                               provider.notifyListeners();
 
                               Navigator.pop(context);
+                            }else if (frmname == "Machine Maintenance"){
+                              final provider =
+                              Provider.of<Preventing_Form_Provider>(
+                                context,
+                                listen: false,
+                              );
+                              provider.selectedMachine_ID =
+                                  item["Select_Value_Code"].toString();
+                              provider.selectedMachine =
+                                  item["Select_Value"].toString();
+                              log(provider.selectedMachine);
+                              provider.notifyListeners();
+
+                              Navigator.pop(context);
                             }
 
-                          }else if (fieldtype == "Send To") {
+                          }
+                          else if (fieldtype == "Send To") {
                             if (frmname == "Breakdown") {
                               final provider =
                               Provider.of<Breakdown_Form_Provider>(
@@ -487,7 +622,8 @@ Future<void> showCategoryBottomSheet(
                               Navigator.pop(context);
                             }
 
-                          }else if (fieldtype == "Sub Head") {
+                          }
+                          else if (fieldtype == "Sub Head") {
                             if (frmname == "Breakdown") {
                               final provider =
                               Provider.of<Breakdown_Form_Provider>(
@@ -518,7 +654,8 @@ Future<void> showCategoryBottomSheet(
                               Navigator.pop(context);
                             }
 
-                          }else if (fieldtype == "BreakDown Detail") {
+                          }
+                          else if (fieldtype == "BreakDown Detail") {
                             if (frmname == "Breakdown") {
                               final provider =
                               Provider.of<Breakdown_Form_Provider>(
@@ -549,7 +686,8 @@ Future<void> showCategoryBottomSheet(
                               Navigator.pop(context);
                             }
 
-                          }else if (fieldtype == "Standard Time Min") {
+                          }
+                          else if (fieldtype == "Standard Time Min") {
                             if (frmname == "Breakdown") {
                               final provider =
                               Provider.of<Breakdown_Form_Provider>(
@@ -580,7 +718,8 @@ Future<void> showCategoryBottomSheet(
                               Navigator.pop(context);
                             }
 
-                          }else if (fieldtype == "Product Machine Name") {
+                          }
+                          else if (fieldtype == "Product Machine Name") {
                             final provider =
                             Provider.of<Breakdown_Form_Provider>(
                               context,
@@ -591,6 +730,37 @@ Future<void> showCategoryBottomSheet(
                             provider.selectedMachine_Product =
                                 item["Select_Value"].toString();
                             log(provider.selectedMachine_Product);
+                            provider.notifyListeners();
+
+                            Navigator.pop(context);
+                          }
+                          else if (fieldtype == "WO Line Item") {
+                            final provider =
+                            Provider.of<Transfer_Memo_Form_Provider>(
+                              context,
+                              listen: false,
+                            );
+                            provider.selectedWO_Line_Item_ID =
+                                item["Select_Value_Code"].toString();
+                            provider.selectedWO_Line_Item_No =
+                                item["Select_Value"].toString();
+                            provider.FinishedTubeSize_Controller.text=item["Select_Value_Display"].toString();
+                            log(provider.selectedWO_Line_Item_No);
+                            provider.notifyListeners();
+
+                            Navigator.pop(context);
+                          }
+                          else if (fieldtype == "Checklist Name") {
+                            final provider =
+                            Provider.of<Preventing_Form_Provider>(
+                              context,
+                              listen: false,
+                            );
+                            provider.selectedChecklist_ID =
+                                item["Select_Value_Code"].toString();
+                            provider.selectedChecklist_Name =
+                                item["Select_Value"].toString();
+
                             provider.notifyListeners();
 
                             Navigator.pop(context);

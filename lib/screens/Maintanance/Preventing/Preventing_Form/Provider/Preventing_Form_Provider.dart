@@ -1,23 +1,26 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:nb_utils/nb_utils.dart';
 
-import '../../../../GlobalComponents/PreferenceManager.dart';
-import '../../../../GlobalComponents/api_service.dart';
-import '../../../../widgets/bottomsheetSelection.dart';
-import '../../../../widgets/customInputDecoration.dart';
-import '../../Transfer_Memo_List/Transfer_Memo_List_Screen.dart';
-import '../Model/ProductModel.dart';
 
-class Transfer_Memo_Form_Provider extends ChangeNotifier {
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
+
+import '../../../../../GlobalComponents/PreferenceManager.dart';
+import '../../../../../GlobalComponents/api_service.dart';
+import '../../Preventing_Listing/Preventing_List.dart';
+
+
+
+class Preventing_Form_Provider extends ChangeNotifier {
   late double height;
   late double width;
 
   bool isRunning = false;
-  String selectedMachine = "";
+
 
   var weight;
   var length;
@@ -51,333 +54,187 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
   final No_of_Piece_Out_Controller  = TextEditingController();
   final Draw_Out_Controller  = TextEditingController();
   final Remarks_Controller  = TextEditingController();
-  final FinishedTubeSize_Controller  = TextEditingController();
   final TextEditingController dateController = TextEditingController();
-  TextEditingController odMmController = TextEditingController();
-  TextEditingController G_RemarksController = TextEditingController();
-  TextEditingController thkMinController = TextEditingController();
-  TextEditingController thkMaxController = TextEditingController();
-  TextEditingController thkMmController = TextEditingController();
-  TextEditingController lengthMinController = TextEditingController();
-  TextEditingController lengthMaxController = TextEditingController();
-  TextEditingController Piece_lengthController = TextEditingController();
-  TextEditingController noOfPiecesController = TextEditingController();
-  // TextEditingController weightController = TextEditingController();
+  final TextEditingController Memo_ByController = TextEditingController();
+  final TextEditingController breakdownTimeController = TextEditingController();
+  final TextEditingController RecoveryTimeController = TextEditingController();
+  final TextEditingController RemarksController = TextEditingController();
+  final TextEditingController AttendantController = TextEditingController();
+  final TextEditingController Frequency_In_DaysController = TextEditingController();
+  final TextEditingController SuggestionController = TextEditingController();
+  final TextEditingController DescriptionController = TextEditingController();
+  final TextEditingController QuantityController = TextEditingController();
 
+  final TextEditingController frequencyStartDateController =
+  TextEditingController();
+
+  final TextEditingController workStartController =
+  TextEditingController();
+
+  final TextEditingController workDoneController =
+  TextEditingController();
+
+  final TextEditingController nextDueDateController =
+  TextEditingController();
+
+  Future<void> pickDate(
+      BuildContext context,
+      TextEditingController controller,
+      ) async {
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+
+    if (pickedDate != null) {
+      controller.text =
+      "${pickedDate.year}-"
+          "${pickedDate.month.toString().padLeft(2, '0')}-"
+          "${pickedDate.day.toString().padLeft(2, '0')}";
+
+      if (controller.text.isNotEmpty) {
+
+        DateTime startDate =
+        DateTime.parse(controller.text);
+
+        int frequencyDays =
+            double.tryParse(Frequency_In_DaysController.text)
+                ?.toInt() ?? 0;
+
+        DateTime nextDueDate =
+        startDate.add(Duration(days: frequencyDays));
+
+        nextDueDateController.text =
+        "${nextDueDate.year}-"
+            "${nextDueDate.month.toString().padLeft(2, '0')}-"
+            "${nextDueDate.day.toString().padLeft(2, '0')}";
+      }
+
+      notifyListeners();
+    }
+  }
 
   bool isTransferMemoExpanded = true;
+
+  List<Map<String, dynamic>> productList = [];
+  List<Map<String, dynamic>> product_Item_List = [];
+
+  bool isInitialized = false;
+
+  List<Map<String, String>> itemName_List = [];
+  String selecteditemName="";
+  String selecteditemName_ID="";
+
+  String Difference="";
+
+  void clearProductForm() {
+    productList.clear();
+    product_Item_List.clear();
+    Machine_Name_List_Product.clear();
+    selectedMachine_Product = "";
+    selectedMachine_ID_Product = "";
+    Checklist_Name_List.clear();
+    selectedChecklist_Name="";
+    selectedChecklist_ID="";
+    Break_Detail_List.clear();
+    selectedBreak_Detail="";
+    selectedBreak_Detail_ID="";
+    Std_Time_Min_List.clear();
+    selectedStd_Time_Min="";
+    selectedStd_Time_Min_ID="";
+    Remarks_Controller.clear();
+    Frequency_In_DaysController.clear();
+    SuggestionController.clear();
+    DescriptionController.clear();
+    QuantityController.clear();
+    productList.clear();
+    product_Item_List.clear();
+    selecteditemName_ID="";
+    selecteditemName="";
+    UOM_List.clear();
+    selectedUOM="";
+    selectedUOM_ID="";
+
+    // notifyListeners();
+  }
 
   void toggleTransferMemoExpansion() {
     isTransferMemoExpanded = !isTransferMemoExpanded;
     notifyListeners();
   }
 
-
-
   List<Map<String, String>> categoryName_List = [];
-
-  String? selectedCategory;
-
-  String selectedCategoryId="";
-
-
-
-
-  List<Map<String, String>> WO_No_List = [];
-  String selectedWO_No_ID="";
-  String selectedWO_No="";
-
-  List<Map<String, String>> WO_Line_Item_List = [];
-  String selectedWO_Line_Item_ID="";
-  String selectedWO_Line_Item_No="";
-
-  List<Map<String, String>> Memo_Type_List = [];
-  String selectedMemoTyppe="";
-  String selectedMemoTyppe_ID="";
-
-  List<String> Finished_Tube_Size_List = ["Size 1", "Size 2", "Size 3"];
-  String? selectedFinishedTubeSize;
+  String? selectedItem;
 
   List<Map<String, String>> Department_List = [];
   String selectedDepartment="";
   String selectedDepartment_ID="";
 
-  List<Map<String, String>> Party_List = [];
-  String selectedPartyName="";
-  String selectedPartyName_ID="";
 
-  List<Map<String, String>> itemName_List = [];
-  String selecteditemName="";
-  String selecteditemName_ID="";
+  String Status="";
 
-  List<Map<String, String>> Grade_List = [];
-  String selectedGrade="";
-  String selectedGrade_ID="";
+
+
+  List<Map<String, String>> Machine_Name_List = [];
+  String selectedMachine = "";
+  String selectedMachine_ID = "";
+
+  List<Map<String, String>> Machine_Name_List_Product = [];
+  String selectedMachine_Product = "";
+  String selectedMachine_ID_Product = "";
+
+  List<Map<String, String>> Checklist_Name_List = [];
+  String selectedChecklist_Name="";
+  String selectedChecklist_ID="";
+
+  List<Map<String, String>> Break_Detail_List = [];
+  String selectedBreak_Detail="";
+  String selectedBreak_Detail_ID="";
+
+
+  List<Map<String, String>> Std_Time_Min_List = [];
+  String selectedStd_Time_Min="";
+  String selectedStd_Time_Min_ID="";
+
+  List<Map<String, String>> Send_To_List = [];
+  String? selectedSendto;
+  String? selectedSendto_ID;
+
+  List<Map<String, String>> Item_Name_List = [];
+  String? selectedItemName;
+  String? selectedItemName_ID;
 
   List<Map<String, String>> UOM_List = [];
-  String selectedUOM="";
-  String selectedUOM_ID="";
+  String? selectedUOM;
+  String? selectedUOM_ID;
 
-  List<Map<String, String>> Location_List = [];
-  String selectedLocation="";
-  String selectedLocation_ID="";
-
-  String selectedNextLocation="";
-  String selectedNextLocation_ID="";
-
-  List<Map<String, String>> Specification_List = [];
-  String selectedSpecification="";
-  String selectedSpecification_ID="";
-
-  List<Map<String, String>> Heat_No_List = [];
-  String selectedHeat_No="";
-  String selectedHeat_No_ID="";
-
+  List<String> Breakdown_Reason_List = ["Reason 1", "Reason 2", "Reason 3"];
+  String? selectedBreakdownReason;
 
   List<String> ProcessList = ["Process A", "Process B", "Process C"];
   String? selectedProcess;
-
-  String? selectedItemName;
-  List<String> ItemName_List = ["Tube", "Pipe", "Rod"];
-
-  bool isInitialized = false;
-
-
-  List<Map<String, dynamic>> productList = [];
-
-
-
-
   bool isLoading=false;
+
+
+
+  String? selectedCategory;
+
+  String selectedCategoryId="";
 
   var Doc_No;
 
-  bool _isUpdating = false;
-
-
-
-
-  /// Called when MIN or MAX changes → update MM
-  void updateFromMinMax() {
-    if (_isUpdating) return;
-    _isUpdating = true;
-
-    final double? min = double.tryParse(thkMinController.text);
-    final double? max = double.tryParse(thkMaxController.text);
-
-    if (min != null && max != null) {
-      final double avg = (min + max) / 2;
-      thkMmController.text = avg.toStringAsFixed(2);
-    } else {
-      thkMmController.clear();
-    }
-
-    _isUpdating = false;
-    notifyListeners();
-  }
-
-  /// Called when MM changes → update missing MIN or MAX
-  void updateFromMm() {
-    if (_isUpdating) return;
-    _isUpdating = true;
-
-    final double? mm = double.tryParse(thkMmController.text);
-    final double? min = double.tryParse(thkMinController.text);
-    final double? max = double.tryParse(thkMaxController.text);
-
-    if (mm != null) {
-      if (min != null && (max == null || max.isNaN)) {
-        final double calcMax = (2 * mm) - min;
-        thkMaxController.text = calcMax.toStringAsFixed(2);
-      } else if (max != null && (min == null || min.isNaN)) {
-        final double calcMin = (2 * mm) - max;
-        thkMinController.text = calcMin.toStringAsFixed(2);
-      }
-    }
-
-    _isUpdating = false;
-    notifyListeners();
-  }
-
-  void updateFromlengthMin() {
-    if (_isUpdating) return;
-    _isUpdating = true;
-
-    final double? min = double.tryParse(lengthMinController.text);
-    final double? max = double.tryParse(lengthMaxController.text);
-
-    if (min != null && max != null) {
-      final avg = (min + max) / 2;
-      Piece_lengthController.text = avg.toStringAsFixed(2);
-    } else {
-      Piece_lengthController.clear();
-    }
-
-    _isUpdating = false;
-    notifyListeners();
-  }
-
-  /// Called when Length MAX changes
-  void updateFromLengthMAX() {
-    if (_isUpdating) return;
-    _isUpdating = true;
-
-    final double? min = double.tryParse(lengthMinController.text);
-    final double? max = double.tryParse(lengthMaxController.text);
-
-    if (min != null && max != null) {
-      final avg = (min + max) / 2;
-      Piece_lengthController.text = avg.toStringAsFixed(2);
-    } else {
-      Piece_lengthController.clear();
-    }
-
-    _isUpdating = false;
-    notifyListeners();
-  }
-
-  /// Called when Piece Length changes
-  void updateFromPiecelength() {
-    if (_isUpdating) return;
-    _isUpdating = true;
-
-    final double? piece = double.tryParse(Piece_lengthController.text);
-    final double? min = double.tryParse(lengthMinController.text);
-    final double? max = double.tryParse(lengthMaxController.text);
-
-    if (piece != null) {
-      if (min != null && (max == null || max.isNaN)) {
-        final calcMax = (2 * piece) - min;
-        lengthMaxController.text = calcMax.toStringAsFixed(2);
-      } else if (max != null && (min == null || min.isNaN)) {
-        final calcMin = (2 * piece) - max;
-        lengthMinController.text = calcMin.toStringAsFixed(2);
-      }
-    }
-
-    _isUpdating = false;
-    notifyListeners();
-  }
-
-
-  void calculateWeight() {
-    final itemName = selecteditemName?.toLowerCase() ?? "";
-
-    final od = double.tryParse(odMmController.text) ?? 0.0;
-    final thkMin = double.tryParse(thkMinController.text) ?? 0.0;
-    final thkMax = double.tryParse(thkMaxController.text) ?? 0.0;
-    final lenMin = double.tryParse(lengthMinController.text) ?? 0.0;
-    final lenMax = double.tryParse(lengthMaxController.text) ?? 0.0;
-    final pieces = double.tryParse(noOfPiecesController.text) ?? 0.0;
-
-    double qtyWeight = 0.0;
-
-    if (itemName.contains("pipe") || itemName.contains("tube")) {
-      qtyWeight = (((od - ((thkMin + thkMax) / 2)) *
-          ((thkMin + thkMax) / 2) ) *
-          ((lenMin + lenMax) / 2) *
-          pieces)*0.0246;
-    } else if (itemName.contains("bar")) {
-      qtyWeight = 0.006125 *
-          (od * od * pieces * ((lenMin + lenMax) / 2) / 1000);
-    }
-
-    weightController.text = qtyWeight.toStringAsFixed(2);
-    notifyListeners();
-  }
-
-
-
-
-
-  void removeProduct(int index) {
-    productList.removeAt(index);
-    notifyListeners();
-  }
-
-
-  void clearProductForm() {
-    itemName_List = [];
-    selecteditemName = "";
-    odMmController.clear();
-    G_RemarksController.clear();
-    thkMinController.clear();
-    thkMaxController.clear();
-    thkMmController.clear();
-    lengthMinController.clear();
-    lengthMaxController.clear();
-    noOfPiecesController.clear();
-    weightController.clear();
-
-    Grade_List = [];
-    selectedGrade = "";
-    selectedGrade_ID = "";
-
-    UOM_List = [];
-    selectedUOM = "";
-    selectedUOM_ID = "";
-
-    Location_List = [];
-    selectedLocation = "";
-    selectedLocation_ID = "";
-    selectedNextLocation = "";
-    selectedNextLocation_ID = "";
-
-    Specification_List = [];
-    selectedSpecification = "";
-    selectedSpecification_ID = "";
-
-    Heat_No_List = [];
-    selectedHeat_No = "";
-    selectedHeat_No_ID = "";
-
-    notifyListeners();
-  }
-
-  void clearMainForm() {
-    categoryName_List = [];
-    selectedCategory = "";
-    selectedCategoryId = "";
-    WO_No_List = [];
-    selectedWO_No_ID = "";
-    selectedWO_No = "";
-    Memo_Type_List = [];
-    selectedMemoTyppe = "";
-    selectedMemoTyppe_ID = "";
-    Department_List = [];
-    selectedDepartment = "";
-    selectedDepartment_ID = "";
-    Party_List = [];
-    selectedPartyName = "";
-    selectedPartyName_ID = "";
-    Doc_No="";
-    selectedWO_Line_Item_No="";
-    selectedWO_Line_Item_ID="";
-    dateController.clear();
-    Remarks_Controller.clear();
-    FinishedTubeSize_Controller.clear();
-    // isInitialized=false;
-
-    // notifyListeners();
-  }
-
-
-
-
-
   void setItem(String value) {
-    selectedCategory = value;
+    selectedItem = value;
     notifyListeners();
   }
 
   List<String> gradeList = ["A", "B", "C", "D"];
+  String? selectedGrade;
 
   List<String> specList = ["Spec 1", "Spec 2", "Spec 3"];
   String? selectedSpec;
-
-
-  final TextEditingController searchController = TextEditingController();
-  List<String> filteredList = [];
 
   final List<Map<String, String>> machines = [
     {"value": "Machine 3", "label": "Machine 3"},
@@ -387,7 +244,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
 
   void startMachine(String machine) {
     isRunning = true;
-    selectedMachine = machine;
+    // selectedMachine = machine;
     notifyListeners();
   }
 
@@ -419,7 +276,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
 
   void stopMachine() {
     isRunning = false;
-    selectedMachine = "";
+    // selectedMachine = "";
     notifyListeners();
   }
 
@@ -441,7 +298,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
   Future<void> pickVideo({bool fromCamera = false}) async {
     final pickedFile = await picker.pickVideo(
       source: fromCamera ? ImageSource.camera : ImageSource.gallery,
-      maxDuration: const Duration(minutes: 2), // limit video duration if needed
+      maxDuration: const Duration(minutes: 2),
     );
 
     if (pickedFile != null) {
@@ -451,9 +308,125 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
   }
 
 
+  Future<String> uploadVideo({
+    required String vary,
+    required String uid,
+    required String token,
+    required String urn,
+    required String tag,
+    required String des,
+    required String size,
+    required String type,
+    required String srno,
+    required String gridvary,
+    required String clientUrl,
+  }) async {
+    if (selectedVideo == null) return "No video selected";
+
+    try {
+      XFile videoFile = XFile(selectedVideo!.path);
+      var result = await callbasicdetailupdate(
+        videoFile,
+        vary,
+        uid,
+        token,
+        urn,
+        tag,
+        des,
+        size,
+        type,
+        srno,
+        gridvary,
+        clientUrl,
+      );
+      return result ?? "Upload failed";
+    } catch (e) {
+      print("Upload Error: $e");
+      return "Error during upload";
+    }
+  }
+
+  /// Multipart upload function
+  Future<String?> callbasicdetailupdate(
+      XFile imagefile,
+      String vary,
+      String uid,
+      String token,
+      String urn,
+      String tag,
+      String des,
+      String size,
+      String type,
+      String srno,
+      String gridvary,
+      String clientUrl,
+      ) async {
+    try {
+      var uri = Uri.parse("$clientUrl/Collection/CollectionAttachment");
+      var request = http.MultipartRequest("POST", uri);
+
+      var stream = http.ByteStream(imagefile.openRead())..cast();
+      var length = await imagefile.length();
+      var multipartfile = http.MultipartFile(
+        "files",
+        stream,
+        length,
+        filename: path.basename(imagefile.path),
+      );
+
+      request.files.add(multipartfile);
+
+      request.fields["Vary"] = vary;
+      request.fields["SAL_URN_NO"] = uid;
+      request.fields["Access_Token"] = token;
+      request.fields["URN_No"] = urn;
+      request.fields["Sr_No"] = srno;
+      request.fields["Grid_Vary"] = gridvary;
+
+      print("Request Fields: ${request.fields}");
+
+      var response = await request.send();
+      var responseData = await response.stream.toBytes();
+      var result = String.fromCharCodes(responseData);
+      print("Upload Response: $result");
+      return result;
+    } catch (e) {
+      print("Error: $e");
+      return null;
+    }
+  }
+
+  // Future<void> uploadVideo() async {
+  //   if (selectedVideo == null) return;
+  //
+  //   try {
+  //     // Example using Dio
+  //     final dio = Dio();
+  //     String fileName = selectedVideo!.path.split('/').last;
+  //
+  //     FormData formData = FormData.fromMap({
+  //       "video": await MultipartFile.fromFile(
+  //         selectedVideo!.path,
+  //         filename: fileName,
+  //       ),
+  //     });
+  //
+  //     Response response = await dio.post(
+  //       "https://your-api-endpoint.com/upload",
+  //       data: formData,
+  //       options: Options(
+  //         headers: {"Content-Type": "multipart/form-data"},
+  //       ),
+  //     );
+  //
+  //     print("Upload success: ${response.data}");
+  //   } catch (e) {
+  //     print("Upload failed: $e");
+  //   }
+  // }
 
 
-  Transfer_Memo_Form_Provider() {
+  Preventing_Form_Provider() {
     final context = NavKey.navKey.currentState!.context;
     final size = MediaQuery.of(context).size;
     height = size.height;
@@ -463,31 +436,10 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
   @override
   void dispose() {
     _timer?.cancel();
-    thkMinController.dispose();
-    thkMaxController.dispose();
-    thkMmController.dispose();
     super.dispose();
   }
 
-  Future<void> init(URNNO,Mode,DocNo,Category) async {
-    Doc_No =DocNo;
-    selectedCategory =Category;
-
-    if(Mode=="Edit"){
-      await getTransferMemoList(URNNO,"");
-    }
-
-    if (dateController.text.isEmpty) {
-      final now = DateTime.now();
-      dateController.text =
-      "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
-    }
-
-    // notifyListeners();
-  }
-
-
-  Future<Map<String, dynamic>?> fetchCategoryListFromAPI(String URN,String Search_text) async {
+  Future<Map<String, dynamic>?> fetchCategoryListFromAPI(String URN,String SearchText,) async {
     try {
       // Read stored values
       final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
@@ -495,6 +447,8 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
       final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
       final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
       final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
+      isLoading =true;
+      notifyListeners();
 
       debugPrint(
         '➡️ GET Transfer/List_Of_Category_IN_Transfer params: '
@@ -512,9 +466,9 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
           'UR_CODE': "1",
-          'item_filertext': Search_text,
+          'item_filertext': SearchText,
           'TableName': "",
-          'FrmName': "frmTransferMemo",
+          'FrmName': "frmMachineMaintenance",
           'GridName': "",
           'SR_No': "",
           'Field_Name': "",
@@ -555,6 +509,8 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
         }
       }
 
+      isLoading =false;
+
       notifyListeners();
       return data;
     } catch (e) {
@@ -563,6 +519,71 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
     }
   }
 
+
+  Future<Map<String, dynamic>?> fetchTimeDiffrenceFromAPI(String URN,String recoveryTime,String breakdownTime,) async {
+    try {
+      // Read stored values
+      final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
+      final token = await PreferenceManager.instance.getStringValue('Access_Token');
+      final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
+      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
+      final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
+      isLoading =true;
+      notifyListeners();
+
+      debugPrint(
+        '➡️ GET Recovery/Recovery_Time_Difference params: '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
+            'Break_Down_Time=$breakdownTime , Recovery_Time= $recoveryTime',
+      );
+
+      // API call
+      final response = await apiService.get(
+        'Recovery/Recovery_Time_Difference',
+        queryParameters: {
+          'URN_No': URN.toString(),
+          'O_URN_No': urnNo.toString(),
+          'Access_Token': Uri.encodeComponent(token).toString(),
+          'CO_CODE': coCode.toString(),
+          'UR_CODE': "1",
+          'Break_Down_Time': breakdownTime,
+          'Recovery_Time': recoveryTime,
+
+        },
+      );
+
+      // Handle response
+      final Map<String, dynamic> data =
+      response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
+
+      if (data['message'] == "User Id or Token is Invalid.") {
+        await PreferenceManager.instance.setBooleanValue("Login", false);
+        debugPrint("⚠️ Invalid token or user ID. Logged out.");
+      } else {
+        // Check if 'message' is a valid list
+        // if (data.containsKey('message') && data['message'] is List) {
+        if (data['settings']['success'] == "1") {
+          Difference = data['message'].toString();
+          log(Difference);
+          // Map category list with both value and code
+          notifyListeners();
+
+          // debugPrint("✅ Categories loaded: ${categoryName_List.length}");
+        } else {
+
+        }
+        // }
+      }
+
+      isLoading =false;
+
+      notifyListeners();
+      return data;
+    } catch (e) {
+      debugPrint('❌ FetchCategoryList Error: $e');
+      return null;
+    }
+  }
 
   Future<Map<String, dynamic>?> fetchDocNoFromAPI(String URN,String frmname) async {
     try {
@@ -586,7 +607,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
         queryParameters: {
           'New_URN_No': URN.toString(),
           'O_URN_No': urnNo.toString(),
-          'Access_Token': token.toString(),
+          'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
           'UR_CODE': "1",
           'item_filertext': "",
@@ -611,7 +632,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
         // Check if 'message' is a valid list
         if (data.containsKey('message') && data['message'] is List) {
           if (data['settings']?['success'] == "1") {
-            
+
             Doc_No =data['message'][0]['Field_Value'];
 
 
@@ -643,235 +664,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>?> fetchWO_NoListFromAPI(String URN) async {
-    try {
-      // Read stored values
-      final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
-      final token = await PreferenceManager.instance.getStringValue('Access_Token');
-      final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
-      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
-      final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
-
-      debugPrint(
-        '➡️ GET Transfer/Wo_No_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
-            'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
-            'P_SR_No= , LINK= , DB_CODE_= ',
-      );
-
-      // API call
-      final response = await apiService.get(
-        'Transfer/Wo_No_List',
-        queryParameters: {
-          'New_URN_No': URN.toString(),
-          'O_URN_No': urnNo.toString(),
-          'Access_Token': Uri.encodeComponent(token).toString(),
-          'CO_CODE': coCode.toString(),
-          'UR_CODE': "1",
-          'item_filertext': "",
-          'TableName': "",
-          'FrmName': "",
-          'GridName': "",
-          'SR_No': "",
-          'Field_Name': "",
-          'P_SR_No': "",
-          'LINK': "",
-        },
-      );
-
-      // Handle response
-      final Map<String, dynamic> data =
-      response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
-
-      if (data['message'] == "User Id or Token is Invalid.") {
-        await PreferenceManager.instance.setBooleanValue("Login", false);
-        debugPrint("⚠️ Invalid token or user ID. Logged out.");
-      } else {
-        // Check if 'message' is a valid list
-        if (data.containsKey('message') && data['message'] is List) {
-          if (data['settings']?['success'] == "1") {
-            // Map category list with both value and code
-            WO_No_List = (data['message'] as List)
-                .map((item) => {
-              "Select_Value": item["Select_Value"]?.toString() ?? "",
-              "Select_Value_Code": item["Select_Value_Code"]?.toString() ?? "",
-            })
-                .toList();
-            debugPrint("✅ WO No loaded: ${WO_No_List.length}");
-          } else {
-            WO_No_List = [];
-            selectedWO_No_ID="";
-            debugPrint("⚠️ No success flag or empty list received.");
-          }
-        } else {
-          WO_No_List = [];
-          selectedWO_No_ID="";
-          debugPrint("⚠️ Invalid message format.");
-        }
-      }
-
-      notifyListeners();
-      return data;
-    } catch (e) {
-      debugPrint('❌ FetchCategoryList Error: $e');
-      return null;
-    }
-  }
-
-  Future<Map<String, dynamic>?> fetchWO_Line_ItemListFromAPI(String URN,String selectedWO_No,) async {
-    try {
-      // Read stored values
-      final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
-      final token = await PreferenceManager.instance.getStringValue('Access_Token');
-      final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
-      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
-      final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
-
-      debugPrint(
-        '➡️ GET Transfer/OA_Line_item_No params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
-            'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
-            'P_SR_No= , LINK= , DB_CODE_= , WO_NO=$selectedWO_No ',
-      );
-
-      // API call
-      final response = await apiService.get(
-        'Transfer/OA_Line_item_No',
-        queryParameters: {
-          'New_URN_No': URN.toString(),
-          'O_URN_No': urnNo.toString(),
-          'Access_Token': Uri.encodeComponent(token).toString(),
-          'CO_CODE': coCode.toString(),
-          'UR_CODE': "1",
-          'item_filertext': "",
-          'TableName': "",
-          'FrmName': "",
-          'GridName': "",
-          'SR_No': "",
-          'Field_Name': "",
-          'P_SR_No': "",
-          'LINK': "",
-          'WO_NO': selectedWO_No,
-        },
-      );
-
-      // Handle response
-      final Map<String, dynamic> data =
-      response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
-
-      if (data['message'] == "User Id or Token is Invalid.") {
-        await PreferenceManager.instance.setBooleanValue("Login", false);
-        debugPrint("⚠️ Invalid token or user ID. Logged out.");
-      } else {
-        // Check if 'message' is a valid list
-        if (data.containsKey('message') && data['message'] is List) {
-          if (data['settings']?['success'] == "1") {
-            // Map category list with both value and code
-            WO_Line_Item_List = (data['message'] as List)
-                .map((item) => {
-              "Select_Value": item["Select_Value"]?.toString() ?? "",
-              "Select_Value_Code": item["Select_Value_Code"]?.toString() ?? "",
-              "Select_Value_Display": item["Select_Value_Display"]?.toString() ?? "",
-            })
-                .toList();
-            debugPrint("✅ WO_Line_Item_List loaded: ${WO_Line_Item_List.length}");
-          } else {
-            WO_Line_Item_List = [];
-            selectedWO_Line_Item_ID="";
-            debugPrint("⚠️ No success flag or empty list received.");
-          }
-        } else {
-          WO_Line_Item_List = [];
-          selectedWO_Line_Item_ID="";
-          debugPrint("⚠️ Invalid message format.");
-        }
-      }
-
-      notifyListeners();
-      return data;
-    } catch (e) {
-      debugPrint('❌ FetchCategoryList Error: $e');
-      return null;
-    }
-  }
-
-
-  Future<Map<String, dynamic>?> fetchMemoTypeListFromAPI(String URN) async {
-    try {
-      // Read stored values
-      final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
-      final token = await PreferenceManager.instance.getStringValue('Access_Token');
-      final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
-      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
-      final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
-
-      debugPrint(
-        '➡️ GET Transfer/List_MemoType params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
-            'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
-            'P_SR_No= , LINK= , DB_CODE_= ',
-      );
-
-      // API call
-      final response = await apiService.get(
-        'Transfer/List_MemoType',
-        queryParameters: {
-          'New_URN_No': URN.toString(),
-          'O_URN_No': urnNo.toString(),
-          'Access_Token': Uri.encodeComponent(token).toString(),
-          'CO_CODE': coCode.toString(),
-          'UR_CODE': "1",
-          'item_filertext': "",
-          'TableName': "",
-          'FrmName': "",
-          'GridName': "",
-          'SR_No': "",
-          'Field_Name': "",
-          'P_SR_No': "",
-          'LINK': "",
-        },
-      );
-
-      // Handle response
-      final Map<String, dynamic> data =
-      response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
-
-      if (data['message'] == "User Id or Token is Invalid.") {
-        await PreferenceManager.instance.setBooleanValue("Login", false);
-        debugPrint("⚠️ Invalid token or user ID. Logged out.");
-      } else {
-        // Check if 'message' is a valid list
-        if (data.containsKey('message') && data['message'] is List) {
-          if (data['settings']?['success'] == "1") {
-            // Map category list with both value and code
-            Memo_Type_List = (data['message'] as List)
-                .map((item) => {
-              "Select_Value": item["Select_Value"]?.toString() ?? "",
-              "Select_Value_Code": item["Select_Value_Code"]?.toString() ?? "",
-            })
-                .toList();
-            debugPrint("✅ Memo Type loaded: ${Memo_Type_List.length}");
-          } else {
-            Memo_Type_List = [];
-            selectedMemoTyppe="";
-            debugPrint("⚠️ No success flag or empty list received.");
-          }
-        } else {
-          Memo_Type_List = [];
-          selectedMemoTyppe="";
-          debugPrint("⚠️ Invalid message format.");
-        }
-      }
-
-      notifyListeners();
-      return data;
-    } catch (e) {
-      debugPrint('❌ FetchCategoryList Error: $e');
-      return null;
-    }
-  }
-
-  Future<Map<String, dynamic>?> fetchDepartmentListFromAPI(String URN,String Search_text) async {
+  Future<Map<String, dynamic>?> fetchDepartmentListFromAPI(String URN) async {
     try {
       // Read stored values
       final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
@@ -896,9 +689,9 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
           'Access_Token': Uri.encodeComponent(token).toString(),
           'CO_CODE': coCode.toString(),
           'UR_CODE': "1",
-          'item_filertext': Search_text,
+          'item_filertext': "",
           'TableName': "",
-          'FrmName': "",
+          'FrmName': "frmRecovery",
           'GridName': "",
           'SR_No': "",
           'Field_Name': "",
@@ -946,7 +739,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>?> fetchPartyListFromAPI(String URN) async {
+  Future<Map<String, dynamic>?> fetchMachine_NameListFromAPI(String URN) async {
     try {
       // Read stored values
       final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
@@ -956,7 +749,7 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
       final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
 
       debugPrint(
-        '➡️ GET Transfer/Suppiler_List params: '
+        '➡️ GET BreakDown/Machine_List params: '
             'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
             'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
             'P_SR_No= , LINK= , DB_CODE_= ',
@@ -964,7 +757,93 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
 
       // API call
       final response = await apiService.get(
-        'Transfer/Suppiler_List',
+        'BreakDown/Machine_List',
+        queryParameters: {
+          'New_URN_No': URN.toString(),
+          'O_URN_No': urnNo.toString(),
+          'Access_Token': Uri.encodeComponent(token).toString(),
+          'CO_CODE': coCode.toString(),
+          'UR_CODE': "1",
+          'item_filertext': "",
+          'TableName': "",
+          'FrmName': "frmMachineMaintenance",
+          'GridName': "",
+          'SR_No': "",
+          'Field_Name': "",
+          'P_SR_No': "",
+          'LINK': "",
+        },
+      );
+
+      // Handle response
+      final Map<String, dynamic> data =
+      response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
+
+      if (data['message'] == "User Id or Token is Invalid.") {
+        await PreferenceManager.instance.setBooleanValue("Login", false);
+        debugPrint("⚠️ Invalid token or user ID. Logged out.");
+      } else {
+        // Check if 'message' is a valid list
+        if (data.containsKey('message') && data['message'] is List) {
+          if (data['settings']?['success'] == "1") {
+            // Map category list with both value and code
+            Machine_Name_List = (data['message'] as List)
+                .map((item) => {
+              "Select_Value": item["Select_Value"]?.toString() ?? "",
+              "Select_Value_Code": item["Select_Value_Code"]?.toString() ?? "",
+            })
+                .toList();
+
+            Machine_Name_List_Product = (data['message'] as List)
+                .map((item) => {
+              "Select_Value": item["Select_Value"]?.toString() ?? "",
+              "Select_Value_Code": item["Select_Value_Code"]?.toString() ?? "",
+            })
+                .toList();
+            debugPrint("✅ Memo Type loaded: ${Machine_Name_List.length}");
+          } else {
+            Machine_Name_List = [];
+            Machine_Name_List_Product = [];
+            selectedMachine="";
+            selectedMachine_Product="";
+            debugPrint("⚠️ No success flag or empty list received.");
+          }
+        } else {
+          Machine_Name_List = [];
+          Machine_Name_List_Product = [];
+          selectedMachine="";
+          selectedMachine_Product="";
+          debugPrint("⚠️ Invalid message format.");
+        }
+      }
+
+      notifyListeners();
+      return data;
+    } catch (e) {
+      debugPrint('❌ FetchCategoryList Error: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> fetchSend_ToListFromAPI(String URN) async {
+    try {
+      // Read stored values
+      final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
+      final token = await PreferenceManager.instance.getStringValue('Access_Token');
+      final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
+      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
+      final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
+
+      debugPrint(
+        '➡️ GET BreakDown/Send_To_List params: '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
+            'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
+            'P_SR_No= , LINK= , DB_CODE_= ',
+      );
+
+      // API call
+      final response = await apiService.get(
+        'BreakDown/Send_To_List',
         queryParameters: {
           'New_URN_No': URN.toString(),
           'O_URN_No': urnNo.toString(),
@@ -994,21 +873,250 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
         if (data.containsKey('message') && data['message'] is List) {
           if (data['settings']?['success'] == "1") {
             // Map category list with both value and code
-            Party_List = (data['message'] as List)
+            Send_To_List = (data['message'] as List)
                 .map((item) => {
               "Select_Value": item["Select_Value"]?.toString() ?? "",
               "Select_Value_Code": item["Select_Value_Code"]?.toString() ?? "",
             })
                 .toList();
-            debugPrint("✅ Party List loaded: ${Party_List.length}");
+            debugPrint("✅ Memo Type loaded: ${Send_To_List.length}");
           } else {
-            Party_List = [];
-            selectedPartyName="";
+            Send_To_List = [];
+            selectedSendto="";
             debugPrint("⚠️ No success flag or empty list received.");
           }
         } else {
-          Party_List = [];
-          selectedPartyName="";
+          Send_To_List = [];
+          selectedSendto="";
+          debugPrint("⚠️ Invalid message format.");
+        }
+      }
+
+      notifyListeners();
+      return data;
+    } catch (e) {
+      debugPrint('❌ FetchCategoryList Error: $e');
+      return null;
+    }
+  }
+
+
+  Future<Map<String, dynamic>?> fetchCheckListFromAPI(String URN,String searchtext,) async {
+    try {
+      // Read stored values
+      final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
+      final token = await PreferenceManager.instance.getStringValue('Access_Token');
+      final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
+      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
+      final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
+
+      debugPrint(
+        '➡️ GET Preventing/Checklist_Name( params: '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
+            'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
+            'P_SR_No= , LINK= , DB_CODE_= ',
+      );
+
+      // API call
+      final response = await apiService.get(
+        'Preventing/Checklist_Name',
+        queryParameters: {
+          'New_URN_No': URN.toString(),
+          'O_URN_No': urnNo.toString(),
+          'Access_Token': Uri.encodeComponent(token).toString(),
+          'CO_CODE': coCode.toString(),
+          'UR_CODE': "1",
+          'item_filertext': searchtext,
+          'TableName': "",
+          'FrmName': "frmMachineMaintenance",
+          'GridName': "",
+          'SR_No': "",
+          'Field_Name': "",
+          'P_SR_No': "",
+          'LINK': "",
+        },
+      );
+
+      // Handle response
+      final Map<String, dynamic> data =
+      response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
+
+      if (data['message'] == "User Id or Token is Invalid.") {
+        await PreferenceManager.instance.setBooleanValue("Login", false);
+        debugPrint("⚠️ Invalid token or user ID. Logged out.");
+      } else {
+        // Check if 'message' is a valid list
+        if (data.containsKey('message') && data['message'] is List) {
+          if (data['settings']?['success'] == "1") {
+            // Map category list with both value and code
+            Checklist_Name_List = (data['message'] as List)
+                .map((item) => {
+              "Select_Value": item["Select_Value"]?.toString() ?? "",
+              "Select_Value_Code": item["Select_Value_Code"]?.toString() ?? "",
+            })
+                .toList();
+            debugPrint("✅ Sub Head loaded: ${Checklist_Name_List.length}");
+          } else {
+            Checklist_Name_List = [];
+            selectedChecklist_Name="";
+            debugPrint("⚠️ No success flag or empty list received.");
+          }
+        } else {
+          Checklist_Name_List = [];
+          selectedChecklist_Name="";
+          debugPrint("⚠️ Invalid message format.");
+        }
+      }
+
+      notifyListeners();
+      return data;
+    } catch (e) {
+      debugPrint('❌ FetchCategoryList Error: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> fetchBreak_Detail_ListFromAPI(String URN) async {
+    try {
+      // Read stored values
+      final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
+      final token = await PreferenceManager.instance.getStringValue('Access_Token');
+      final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
+      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
+      final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
+
+      debugPrint(
+        '➡️ GET BreakDown/Breck_Details_List( params: '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
+            'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
+            'P_SR_No= , LINK= , DB_CODE_= ',
+      );
+
+      // API call
+      final response = await apiService.get(
+        'BreakDown/Breck_Details_List',
+        queryParameters: {
+          'New_URN_No': URN.toString(),
+          'O_URN_No': urnNo.toString(),
+          'Access_Token': Uri.encodeComponent(token).toString(),
+          'CO_CODE': coCode.toString(),
+          'UR_CODE': "1",
+          'item_filertext': "",
+          'TableName': "",
+          'FrmName': "frmRecovery",
+          'GridName': "",
+          'SR_No': "",
+          'Field_Name': "",
+          'P_SR_No': "",
+          'LINK': "",
+          'M_Machine_Code': selectedMachine_ID,
+          'Sub_Head': selectedChecklist_ID,
+        },
+      );
+
+      // Handle response
+      final Map<String, dynamic> data =
+      response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
+
+      if (data['message'] == "User Id or Token is Invalid.") {
+        await PreferenceManager.instance.setBooleanValue("Login", false);
+        debugPrint("⚠️ Invalid token or user ID. Logged out.");
+      } else {
+        // Check if 'message' is a valid list
+        if (data.containsKey('message') && data['message'] is List) {
+          if (data['settings']?['success'] == "1") {
+            // Map category list with both value and code
+            Break_Detail_List = (data['message'] as List)
+                .map((item) => {
+              "Select_Value": item["Select_Value"]?.toString() ?? "",
+              "Select_Value_Code": item["Select_Value_Code"]?.toString() ?? "",
+            })
+                .toList();
+            debugPrint("✅ Sub Head loaded: ${Break_Detail_List.length}");
+          } else {
+            Break_Detail_List = [];
+            selectedBreak_Detail="";
+            debugPrint("⚠️ No success flag or empty list received.");
+          }
+        } else {
+          Break_Detail_List = [];
+          selectedBreak_Detail="";
+          debugPrint("⚠️ Invalid message format.");
+        }
+      }
+
+      notifyListeners();
+      return data;
+    } catch (e) {
+      debugPrint('❌ FetchCategoryList Error: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> fetchStd_Time_Min_ListFromAPI(String URN) async {
+    try {
+      // Read stored values
+      final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
+      final token = await PreferenceManager.instance.getStringValue('Access_Token');
+      final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
+      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
+      final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
+
+      debugPrint(
+        '➡️ GET BreakDown/Standard_Time_Breckdown( params: '
+            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
+            'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
+            'P_SR_No= , LINK= , DB_CODE_= ',
+      );
+
+      // API call
+      final response = await apiService.get(
+        'BreakDown/Standard_Time_Breckdown',
+        queryParameters: {
+          'New_URN_No': URN.toString(),
+          'O_URN_No': urnNo.toString(),
+          'Access_Token': Uri.encodeComponent(token).toString(),
+          'CO_CODE': coCode.toString(),
+          'UR_CODE': "1",
+          'item_filertext': "",
+          'TableName': "",
+          'FrmName': "frmBreakdown",
+          'GridName': "",
+          'SR_No': "",
+          'Field_Name': "",
+          'P_SR_No': "",
+          'LINK': "",
+          'Breckdown_detail_Code': selectedBreak_Detail_ID,
+        },
+      );
+
+      // Handle response
+      final Map<String, dynamic> data =
+      response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
+
+      if (data['message'] == "User Id or Token is Invalid.") {
+        await PreferenceManager.instance.setBooleanValue("Login", false);
+        debugPrint("⚠️ Invalid token or user ID. Logged out.");
+      } else {
+        // Check if 'message' is a valid list
+        if (data.containsKey('message') && data['message'] is List) {
+          if (data['settings']?['success'] == "1") {
+            // Map category list with both value and code
+            Std_Time_Min_List = (data['message'] as List)
+                .map((item) => {
+              "Select_Value": item["Select_Value"]?.toString() ?? "",
+              "Select_Value_Code": item["Select_Value_Code"]?.toString() ?? "",
+            })
+                .toList();
+            debugPrint("✅ Sub Head loaded: ${Std_Time_Min_List.length}");
+          } else {
+            Std_Time_Min_List = [];
+            selectedStd_Time_Min="";
+            debugPrint("⚠️ No success flag or empty list received.");
+          }
+        } else {
+          Std_Time_Min_List = [];
+          selectedStd_Time_Min="";
           debugPrint("⚠️ Invalid message format.");
         }
       }
@@ -1173,306 +1281,6 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>?> fetchgradeListFromAPI(String URN) async {
-    try {
-      // Read stored values
-      final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
-      final token = await PreferenceManager.instance.getStringValue('Access_Token');
-      final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
-      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
-      final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
-
-      debugPrint(
-        '➡️ GET Transfer/Grade_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
-            'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
-            'P_SR_No= , LINK= , DB_CODE_= ',
-      );
-
-      // API call
-      final response = await apiService.get(
-        'Transfer/Grade_List',
-        queryParameters: {
-          'New_URN_No': URN.toString(),
-          'O_URN_No': urnNo.toString(),
-          'Access_Token': Uri.encodeComponent(token).toString(),
-          'CO_CODE': coCode.toString(),
-          'UR_CODE': "1",
-          'item_filertext': "",
-          'TableName': "",
-          'FrmName': "",
-          'GridName': "",
-          'SR_No': "",
-          'Field_Name': "",
-          'P_SR_No': "",
-          'LINK': "",
-        },
-      );
-
-      // Handle response
-      final Map<String, dynamic> data =
-      response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
-
-      if (data['message'] == "User Id or Token is Invalid.") {
-        await PreferenceManager.instance.setBooleanValue("Login", false);
-        debugPrint("⚠️ Invalid token or user ID. Logged out.");
-      } else {
-        // Check if 'message' is a valid list
-        if (data.containsKey('message') && data['message'] is List) {
-          if (data['settings']?['success'] == "1") {
-            // Map category list with both value and code
-            Grade_List = (data['message'] as List)
-                .map((item) => {
-              "Select_Value": item["Select_Value"]?.toString() ?? "",
-              "Select_Value_Code": item["Select_Value_Code"]?.toString() ?? "",
-            })
-                .toList();
-            debugPrint("✅ Grade loaded: ${Grade_List.length}");
-          } else {
-            Grade_List = [];
-            selectedGrade="";
-            debugPrint("⚠️ No success flag or empty list received.");
-          }
-        } else {
-          Grade_List = [];
-          selectedGrade="";
-          debugPrint("⚠️ Invalid message format.");
-        }
-      }
-
-      notifyListeners();
-      return data;
-    } catch (e) {
-      debugPrint('❌ FetchCategoryList Error: $e');
-      return null;
-    }
-  }
-
-  Future<Map<String, dynamic>?> fetchLocationListFromAPI(String URN,String Search_text) async {
-    try {
-      // Read stored values
-      final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
-      final token = await PreferenceManager.instance.getStringValue('Access_Token');
-      final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
-      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
-      final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
-
-      debugPrint(
-        '➡️ GET Transfer/Location_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
-            'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
-            'P_SR_No= , LINK= , DB_CODE_= ',
-      );
-
-      // API call
-      final response = await apiService.get(
-        'Transfer/Location_List',
-        queryParameters: {
-          'New_URN_No': URN.toString(),
-          'O_URN_No': urnNo.toString(),
-          'Access_Token': Uri.encodeComponent(token).toString(),
-          'CO_CODE': coCode.toString(),
-          'UR_CODE': "1",
-          'item_filertext': Search_text,
-          'TableName': "",
-          'FrmName': "",
-          'GridName': "",
-          'SR_No': "",
-          'Field_Name': "",
-          'P_SR_No': "",
-          'LINK': "",
-        },
-      );
-
-      // Handle response
-      final Map<String, dynamic> data =
-      response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
-
-      if (data['message'] == "User Id or Token is Invalid.") {
-        await PreferenceManager.instance.setBooleanValue("Login", false);
-        debugPrint("⚠️ Invalid token or user ID. Logged out.");
-      } else {
-        // Check if 'message' is a valid list
-        if (data.containsKey('message') && data['message'] is List) {
-          if (data['settings']?['success'] == "1") {
-            // Map category list with both value and code
-            Location_List = (data['message'] as List)
-                .map((item) => {
-              "Select_Value": item["Select_Value"]?.toString() ?? "",
-              "Select_Value_Code": item["Select_Value_Code"]?.toString() ?? "",
-            })
-                .toList();
-            debugPrint("✅ Location loaded: ${Grade_List.length}");
-          } else {
-            Location_List = [];
-            selectedLocation="";
-            debugPrint("⚠️ No success flag or empty list received.");
-          }
-        } else {
-          Location_List = [];
-          selectedLocation="";
-          debugPrint("⚠️ Invalid message format.");
-        }
-      }
-
-      notifyListeners();
-      return data;
-    } catch (e) {
-      debugPrint('❌ FetchCategoryList Error: $e');
-      return null;
-    }
-  }
-
-  Future<Map<String, dynamic>?> fetchSpecificationListFromAPI(String URN) async {
-    try {
-      // Read stored values
-      final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
-      final token = await PreferenceManager.instance.getStringValue('Access_Token');
-      final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
-      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
-      final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
-
-      debugPrint(
-        '➡️ GET Transfer/Specification_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
-            'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
-            'P_SR_No= , LINK= , DB_CODE_= ',
-      );
-
-      // API call
-      final response = await apiService.get(
-        'Transfer/Specification_List',
-        queryParameters: {
-          'New_URN_No': URN.toString(),
-          'O_URN_No': urnNo.toString(),
-          'Access_Token': Uri.encodeComponent(token).toString(),
-          'CO_CODE': coCode.toString(),
-          'UR_CODE': "1",
-          'item_filertext': "",
-          'TableName': "",
-          'FrmName': "",
-          'GridName': "",
-          'SR_No': "",
-          'Field_Name': "",
-          'P_SR_No': "",
-          'LINK': "",
-        },
-      );
-
-      // Handle response
-      final Map<String, dynamic> data =
-      response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
-
-      if (data['message'] == "User Id or Token is Invalid.") {
-        await PreferenceManager.instance.setBooleanValue("Login", false);
-        debugPrint("⚠️ Invalid token or user ID. Logged out.");
-      } else {
-        // Check if 'message' is a valid list
-        if (data.containsKey('message') && data['message'] is List) {
-          if (data['settings']?['success'] == "1") {
-            // Map category list with both value and code
-            Specification_List = (data['message'] as List)
-                .map((item) => {
-              "Select_Value": item["Select_Value"]?.toString() ?? "",
-              "Select_Value_Code": item["Select_Value_Code"]?.toString() ?? "",
-            })
-                .toList();
-            debugPrint("✅ Specification loaded: ${Specification_List.length}");
-          } else {
-            Specification_List = [];
-            selectedSpecification="";
-            debugPrint("⚠️ No success flag or empty list received.");
-          }
-        } else {
-          Specification_List = [];
-          selectedSpecification="";
-          debugPrint("⚠️ Invalid message format.");
-        }
-      }
-
-      notifyListeners();
-      return data;
-    } catch (e) {
-      debugPrint('❌ FetchCategoryList Error: $e');
-      return null;
-    }
-  }
-
-  Future<Map<String, dynamic>?> fetchHeatNoListFromAPI(String URN) async {
-    try {
-      // Read stored values
-      final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
-      final token = await PreferenceManager.instance.getStringValue('Access_Token');
-      final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
-      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
-      final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
-
-      debugPrint(
-        '➡️ GET Transfer/Heat_No_List params: '
-            'New_URN_No=$URN, O_URN_No=$urnNo, Access_Token=$token, CO_CODE=$coCode, UR_CODE=1, '
-            'item_filertext= , TableName= , FrmName= , GridName= , SR_No= , Field_Name= , '
-            'P_SR_No= , LINK= , DB_CODE_= ',
-      );
-
-      // API call
-      final response = await apiService.get(
-        'Transfer/Heat_No_List',
-        queryParameters: {
-          'New_URN_No': URN.toString(),
-          'O_URN_No': urnNo.toString(),
-          'Access_Token': Uri.encodeComponent(token).toString(),
-          'CO_CODE': coCode.toString(),
-          'UR_CODE': "1",
-          'item_filertext': "",
-          'TableName': "",
-          'FrmName': "",
-          'GridName': "",
-          'SR_No': "",
-          'Field_Name': "",
-          'P_SR_No': "",
-          'LINK': "",
-        },
-      );
-
-      // Handle response
-      final Map<String, dynamic> data =
-      response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
-
-      if (data['message'] == "User Id or Token is Invalid.") {
-        await PreferenceManager.instance.setBooleanValue("Login", false);
-        debugPrint("⚠️ Invalid token or user ID. Logged out.");
-      } else {
-        // Check if 'message' is a valid list
-        if (data.containsKey('message') && data['message'] is List) {
-          if (data['settings']?['success'] == "1") {
-            // Map category list with both value and code
-            Heat_No_List = (data['message'] as List)
-                .map((item) => {
-              "Select_Value": item["Select_Value"]?.toString() ?? "",
-              "Select_Value_Code": item["Select_Value_Code"]?.toString() ?? "",
-            })
-                .toList();
-            debugPrint("✅ Heat No loaded: ${Heat_No_List.length}");
-          } else {
-            Heat_No_List = [];
-            selectedHeat_No="";
-            debugPrint("⚠️ No success flag or empty list received.");
-          }
-        } else {
-          Heat_No_List = [];
-          selectedHeat_No="";
-          debugPrint("⚠️ Invalid message format.");
-        }
-      }
-
-      notifyListeners();
-      return data;
-    } catch (e) {
-      debugPrint('❌ FetchCategoryList Error: $e');
-      return null;
-    }
-  }
-
   Future<void> submitForm(Map<String, dynamic> fieldString, String URN_NO,String Mode,String SR_No) async {
     try {
       final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
@@ -1492,11 +1300,10 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
         'FieldString': jsonEncode(fieldString),
       };
 
-      // ✅ Log the complete payload for debugging
-      log("📦 Transfer Memo Submit Payload:\n${jsonEncode(payload)}");
+      log("📦 Recovery Submit Payload:\n${jsonEncode(payload)}");
 
       final response = await apiService.post(
-        'Transfer/Insert_Data_For_Transfer_Memo',
+        'Preventing/Insert_Data_Machine_Maintenance',
         data: payload,
       );
 
@@ -1504,18 +1311,18 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
       final Map<String, dynamic> data =
       response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
 
-      log("✅ Transfer/Insert_Data_For_Transfer_Memo Response:\n$data");
+      log("✅ Preventing/Insert_Data_Machine_Maintenance:\n$data");
       if(Mode =="Master"){
         final context = NavKey.navKey.currentState!.context;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => Transfer_Memo_List()),
+          MaterialPageRoute(builder: (context) => Preventing_List()),
         );
         isInitialized = false;
       }else{
         final context = NavKey.navKey.currentState!.context;
         Navigator.pop(context);
-        getTransferMemoList(URN_NO,"");
+        Get_Recovery_List(URN_NO,"");
       }
 
 
@@ -1527,16 +1334,60 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
     }
   }
 
-  Future<void> getTransferMemoList(String URNNO,String Sr_no,) async {
+  Future<void> init(URNNO,Mode,DocNo,Category) async {
+    Doc_No =DocNo;
+    selectedCategory =Category;
+
+    if(Mode=="Edit"){
+      await Get_Recovery_List(URNNO,"");
+    }
+
+    if (dateController.text.isEmpty) {
+      final now = DateTime.now();
+      dateController.text =
+      "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+    }
+
+
+    // notifyListeners();
+  }
+
+  void clearMainForm() {
+    Doc_No ="";
+    categoryName_List = [];
+    selectedCategory = "";
+    selectedCategoryId = "";
+    dateController.clear();
+    Remarks_Controller.clear();
+    Machine_Name_List=[];
+    selectedMachine="";
+    selectedMachine_ID="";
+    Send_To_List=[];
+    selectedSendto="";
+    selectedSendto_ID="";
+    Department_List=[];
+    selectedDepartment="";
+    selectedDepartment_ID="";
+    breakdownTimeController.clear();
+    Memo_ByController.clear();
+    isInitialized=false;
+    RecoveryTimeController.clear();
+    AttendantController.clear();
+
+    // notifyListeners();
+
+
+  }
+
+  Future<void> Get_Recovery_List(String URNNO,String Sr_no,) async {
     try {
       final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
       final token = await PreferenceManager.instance.getStringValue('Access_Token');
       final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
-      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
+      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL');
       final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
-
       final response = await apiService.get(
-        'Transfer/Get_Transfer_Memo_Data',
+        'Preventing/Get_Machine_Maintenance_List',
         queryParameters: {
           'URN_No': URNNO,
           'O_URN_No': urnNo.toString(),
@@ -1556,51 +1407,52 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
           dateController.text = data['message'][0]['Doc_Date'];
           selectedCategoryId = data['message'][0]['Category_URN_No'];
           selectedCategory = data['message'][0]['Category_Name'];
-          selectedWO_No_ID = data['message'][0]['WO_No_URN_No'];
-          selectedWO_No = data['message'][0]['WO_No'];
-          selectedMemoTyppe_ID = data['message'][0]['Memo_Type_ID'];
-          selectedMemoTyppe = data['message'][0]['Memo_Type'];
+          selectedCategory = data['message'][0]['Category_Name'];
+          selectedMachine = data['message'][0]['MAchine_Name'];
+          selectedMachine_ID = data['message'][0]['Machine_CODE'];
+          selectedDepartment = data['message'][0]['Department_name'];
           selectedDepartment_ID = data['message'][0]['Department_URN_No'];
-          selectedDepartment = data['message'][0]['Department_Name'];
-          selectedPartyName_ID = data['message'][0]['Party_URN_No'];
-          selectedPartyName = data['message'][0]['Party_name'];
-          selectedWO_Line_Item_ID = data['message'][0]['Wo_Line_item'];
-          selectedWO_Line_Item_No = data['message'][0]['Wo_Line_item_Name'];
-          FinishedTubeSize_Controller.text = data['message'][0]['Finished_Tubes_Size'];
-          Remarks_Controller.text = data['message'][0]['Remarks'];
+          Status = data['message'][0]['Status'];
+
+
 
           if (data['Grid_data'] is List) {
             productList = List<Map<String, dynamic>>.from(data['Grid_data']);
           } else {
             productList = [];
           }
+
+          if (data['Item_data'] is List) {
+            product_Item_List = List<Map<String, dynamic>>.from(data['Item_data']);
+          } else {
+            product_Item_List = [];
+          }
         }else{
-          selecteditemName_ID = data['message'][0]['Item_ID'];
-          selecteditemName = data['message'][0]['Item_name'];
-          selectedGrade_ID = data['message'][0]['Grade_URN_No'];
-          selectedGrade = data['message'][0]['Grade_Name'];
-          odMmController.text = data['message'][0]['OD_MM'].toString();
-          thkMinController.text = data['message'][0]['THK_MIN'].toString();
-          thkMaxController.text = data['message'][0]['THK_MAX'].toString();
-          thkMmController.text = data['message'][0]['THK_MM'].toString();
-          lengthMinController.text = data['message'][0]['Length_MIN'].toString();
-          lengthMaxController.text = data['message'][0]['Length_MAX'].toString();
-          noOfPiecesController.text = data['message'][0]['No_Of_Piece'].toString();
-          weightController.text = data['message'][0]['Quantity'].toString();
-          selectedUOM_ID = data['message'][0]['UOM_URN_No'].toString();
-          selectedUOM = data['message'][0]['UOM_Name'].toString();
-          selectedLocation_ID = data['message'][0]['Location_Code'].toString();
-          selectedLocation = data['message'][0]['Location_Name'].toString();
-          selectedNextLocation_ID = data['message'][0]['Next_Location_code'].toString();
-          selectedNextLocation = data['message'][0]['Next_Location_Name'].toString();
-          selectedSpecification_ID = data['message'][0]['Specification_URN_No'].toString();
-          selectedSpecification = data['message'][0]['Specification_Name'].toString();
-          selectedHeat_No_ID = data['message'][0]['Heat_No'].toString();
-          selectedHeat_No = data['message'][0]['Heat_No'].toString();
-          G_RemarksController.text = data['message'][0]['Remarks'].toString();
+
+          selectedChecklist_ID = data['message'][0]['checklist_CODE'];
+          selectedChecklist_Name = data['message'][0]['checklist_name'];
+          frequencyStartDateController.text= data['message'][0]['Frequency_start_Date'];
+          Frequency_In_DaysController.text= data['message'][0]['Frequency_In_Days'].toString();
+          workStartController.text= data['message'][0]['Work_Start'];
+          workDoneController.text= data['message'][0]['Work_End'];
+          // nextDueDateController.text= data['message'][0]['next_due_date'];
+          if (frequencyStartDateController.text.isNotEmpty) {
+
+            DateTime startDate =
+            DateTime.parse(frequencyStartDateController.text);
+
+            int frequencyDays =
+            (data['message'][0]['Frequency_In_Days'] as num).toInt();
+
+            DateTime nextDueDate =
+            startDate.add(Duration(days: frequencyDays));
+
+            nextDueDateController.text =
+            "${nextDueDate.year}-"
+                "${nextDueDate.month.toString().padLeft(2, '0')}-"
+                "${nextDueDate.day.toString().padLeft(2, '0')}";
+          }
         }
-
-
 
         notifyListeners();
 
@@ -1616,8 +1468,42 @@ class Transfer_Memo_Form_Provider extends ChangeNotifier {
     }
   }
 
+  Future<void> pickDateTime(
+      BuildContext context,
+      TextEditingController controller,
+      ) async {
 
+    DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+
+    if (pickedDate == null) return;
+
+    TimeOfDay? pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+
+    if (pickedTime == null) return;
+
+    DateTime finalDateTime = DateTime(
+      pickedDate.year,
+      pickedDate.month,
+      pickedDate.day,
+      pickedTime.hour,
+      pickedTime.minute,
+    );
+
+    controller.text =
+    "${finalDateTime.year}-"
+        "${finalDateTime.month.toString().padLeft(2, '0')}-"
+        "${finalDateTime.day.toString().padLeft(2, '0')} "
+        "${finalDateTime.hour.toString().padLeft(2, '0')}:"
+        "${finalDateTime.minute.toString().padLeft(2, '0')}";
+
+    notifyListeners();
+  }
 }
-
-
-

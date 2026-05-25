@@ -8,12 +8,11 @@ import 'package:nb_utils/nb_utils.dart';
 import '../../../../GlobalComponents/PreferenceManager.dart';
 import '../../../../GlobalComponents/api_service.dart';
 import '../../../Login_Screens/Login_Page.dart';
+import '../../../Maintanance/BreakDown/BreakDown_Form.dart';
 import '../Model/Card_No_Get_Model.dart';
 import '../Model/Matchine_Name_Get_Model.dart';
 import '../Model/Process_Get_Model.dart';
 import '../Model/URN_No_Model.dart';
-
-// import 'package:record/record.dart';
 
 
 class Production_Form_Provider extends ChangeNotifier {
@@ -34,6 +33,10 @@ class Production_Form_Provider extends ChangeNotifier {
   int waitSeconds = 0;
   int waitSeconds_Drop = 0;
 
+
+
+  bool get isQualityHighlight => addCount % 10 == 0 && addCount != 0;
+
   ProcessCardMessage? selectedCard;     // countdown seconds
   bool _isProcesscard = true;
 
@@ -43,6 +46,9 @@ class Production_Form_Provider extends ChangeNotifier {
 
   Timer? addTimer;
   bool isAddPending = false;
+
+
+  List<List<List<TextEditingController>>> tableData = [];
 
   Future<void> init() async {
     if(_isProcesscard ==true){
@@ -56,14 +62,14 @@ class Production_Form_Provider extends ChangeNotifier {
   // countdown seconds
 
   void incrementAddCount(fieldstringJson) {
-    addCount++;
+    // addCount++;
 
 
 
     notifyListeners();
   }
   void incrementAddCount_Drop(fieldstringJson) {
-    addCount++;
+    // addCount++;
 
     // Update_Data(fieldstringJson);
 
@@ -71,8 +77,14 @@ class Production_Form_Provider extends ChangeNotifier {
   }
 
   void startCountdown() {
+    if (waitSeconds > 0) return; // ✅ prevent multiple taps
+
     waitSeconds = 30;
-    Timer.periodic(const Duration(seconds: 1), (timer) {
+    notifyListeners(); // ✅ update UI instantly
+
+    _timer?.cancel(); // safety
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (waitSeconds > 0) {
         waitSeconds--;
         notifyListeners();
@@ -83,8 +95,14 @@ class Production_Form_Provider extends ChangeNotifier {
   }
 
   void startCountdown_Drop() {
+    if (waitSeconds_Drop > 0) return; // ✅ prevent multiple triggers
+
     waitSeconds_Drop = 30;
-    Timer.periodic(const Duration(seconds: 1), (timer) {
+    notifyListeners(); // ✅ update UI immediately
+
+    _dropTimer?.cancel(); // safety (avoid duplicate timers)
+
+    _dropTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (waitSeconds_Drop > 0) {
         waitSeconds_Drop--;
         notifyListeners();
@@ -131,6 +149,7 @@ class Production_Form_Provider extends ChangeNotifier {
   String? selectedProcessName;
   String? selectedvary;
   String? selectedSr_No;
+  var QualityCheck="";
 
   List<String> ProcessList = ["Process A", "Process B", "Process C"];
   String? selectedProcess;
@@ -138,7 +157,6 @@ class Production_Form_Provider extends ChangeNotifier {
   final context = NavKey.navKey.currentState!.context;
 
   String? generatedUrn;
-
 
   // final AudioRecorder _audioRecorder = AudioRecorder();
   // bool isRecording = false;
@@ -173,7 +191,6 @@ class Production_Form_Provider extends ChangeNotifier {
   //   notifyListeners();
   // }
 
-
   List<String> gradeList = ["A", "B", "C", "D"];
   String? selectedGrade;
 
@@ -195,6 +212,8 @@ class Production_Form_Provider extends ChangeNotifier {
 
   int countdown = 0;
   Timer? _timer;
+  Timer? _dropTimer;
+
 
   // void startCountdown(int seconds) {
   //   countdown = seconds;
@@ -244,8 +263,6 @@ class Production_Form_Provider extends ChangeNotifier {
 
 
 
-
-
   Future<Map<String, dynamic>?> _loadProcessCardList()  async{
     try {
       // Read stored values from SharedPreferences
@@ -283,7 +300,6 @@ class Production_Form_Provider extends ChangeNotifier {
       final processCard = ProcessCardResponse.fromJson(data);
 
 
-
 // store full objects
       processCardItems = processCard.message;
 
@@ -301,7 +317,7 @@ class Production_Form_Provider extends ChangeNotifier {
       final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
       final token = await PreferenceManager.instance.getStringValue('Access_Token');
       final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
-      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
+      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL');
       final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
 
       debugPrint(
@@ -382,6 +398,103 @@ class Production_Form_Provider extends ChangeNotifier {
     }
   }
 
+  Future<void> loadQualityCheckData() async {
+    try {
+      final urnNo  = await PreferenceManager.instance.getStringValue('Operator_URN_No');
+      final token  = await PreferenceManager.instance.getStringValue('Access_Token');
+      final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
+      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL');
+
+      final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
+
+      final response = await apiService.get(
+        'Production/qualitycheckData',
+        queryParameters: {
+          'O_URN_No': urnNo,
+          'Access_Token': Uri.encodeComponent(token).toString(),
+          'CO_CODE': coCode,
+          'UR_CODE': "1",
+          'Process_Card_URN_NO': selectedItemUrn,
+          'Process_No': selectedProcessUrn,
+          'Vary': selectedvary,
+          'GridName': QualityCheck,
+        },
+      );
+
+      final Map<String, dynamic> data =
+      response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
+
+      final List message = data['message'] ?? [];
+
+      /// 🔥 CLEAR OLD DATA
+      tableData.clear();
+
+      /// ✅ ALWAYS ADD EMPTY TABLE FIRST
+      tableData.add(createEmptyTable());
+
+      /// ❗ IF NO DATA → ONLY EMPTY TABLE
+      if (message.isEmpty) {
+        notifyListeners();
+        return;
+      }
+
+      /// ✅ LOOP THROUGH EACH TABLE (REF_SR_NO)
+      for (var table in message) {
+        final List details = table['Details'] ?? [];
+
+        Map<String, Map<String, String>> mappedData = {};
+
+        for (var item in details) {
+          mappedData[item['Type']] = {
+            "FE": item['Front_end'],
+            "CE": item['Center'],
+            "BE": item['Back_end'],
+            "Min": item['Min'],
+            "Max": item['Max'],
+          };
+        }
+
+        /// ADD FILLED TABLE
+        if (mappedData.isNotEmpty) {
+          tableData.add(_createFilledTable(mappedData));
+        }
+      }
+
+      notifyListeners();
+
+    } catch (e, st) {
+      debugPrint('❌ Fetch Quality Check Error: $e');
+      debugPrintStack(stackTrace: st);
+    }
+  }
+
+  List<List<TextEditingController>> createEmptyTable() {
+    List<String> rows = ["OD", "WT", "Lg", "SF"];
+
+    return List.generate(rows.length, (_) {
+      return List.generate(5, (_) => TextEditingController());
+    });
+  }
+
+  List<List<TextEditingController>> _createFilledTable(
+      Map<String, Map<String, String>> data) {
+
+    List<String> rows = ["OD", "WT", "Lg", "SF"];
+
+    return List.generate(rows.length, (i) {
+      String type = rows[i];
+      var row = data[type];
+
+      return [
+        TextEditingController(text: row?['FE'] ?? ''),
+        TextEditingController(text: row?['CE'] ?? ''),
+        TextEditingController(text: row?['BE'] ?? ''),
+        TextEditingController(text: row?['Min'] ?? ''),
+        TextEditingController(text: row?['Max'] ?? ''),
+      ];
+    });
+  }
+
 
 
   Future<void> generateUrnNo() async {
@@ -425,6 +538,7 @@ class Production_Form_Provider extends ChangeNotifier {
       if (generateUrnResponse.message.isNotEmpty) {
         generatedUrn = generateUrnResponse.message.first.urnNo;
         debugPrint('✅ Generated URN: $generatedUrn');
+
       } else {
         generatedUrn = null;
         debugPrint('⚠️ No URN received');
@@ -512,6 +626,7 @@ class Production_Form_Provider extends ChangeNotifier {
           startCountdown_Drop();
           incrementAddCount_Drop(fieldstringJson);
         }
+        addCount =data['count'];
 
         Fluttertoast.showToast(
           msg: data['message'].toString(),
@@ -542,6 +657,98 @@ class Production_Form_Provider extends ChangeNotifier {
 
 
 
+  Future<void>  QualityCheckUpdate(fieldstringJson) async {
+    try {
+      final urnNo  = await PreferenceManager.instance.getStringValue('Operator_URN_No');
+      final token  = await PreferenceManager.instance.getStringValue('Access_Token');
+      final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
+      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
+      final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
+
+      final response = await apiService.post(
+        'Production/Insertqualitycheck',
+        data: {
+          'CO_CODE': coCode,
+          'UR_CODE': "1",
+          'Access_Token': token,
+          'Vary': selectedvary,
+          'O_URN_No': urnNo,
+          'URN_No': generatedUrn,
+          'GridName': QualityCheck,
+          'FieldString': fieldstringJson,
+        },
+      );
+
+      // Convert to Map
+      final Map<String, dynamic> data =
+      response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
+
+      if (data['settings']['success'].toString() == "0") {
+        showDialog(
+          context: context,
+          barrierDismissible: false, // user must press OK
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              // title: Text(
+              //   "Error",
+              //   style: TextStyle(
+              //     fontWeight: FontWeight.bold,
+              //     fontSize: 18,
+              //   ),
+              // ),
+              content: Text(
+                data['message'].toString(),
+                style: TextStyle(fontSize: 16),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close dialog
+                  },
+                  child: Text(
+                    "OK",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      }else{
+
+
+        Fluttertoast.showToast(
+          msg: data['message'].toString(),
+          toastLength: Toast.LENGTH_LONG,
+        );
+
+      }
+
+
+      // Parse into model
+      // final generateUrnResponse = GenerateUrnResponse.fromJson(data);
+
+      // Store the first URN_No (if exists) in a variable
+      // if (generateUrnResponse.message.isNotEmpty) {
+      //   generatedUrn = generateUrnResponse.message.first.urnNo;
+      //   debugPrint('✅ Generated URN: $generatedUrn');
+      // } else {
+      //   generatedUrn = null;
+      //   debugPrint('⚠️ No URN received');
+      // }
+
+      notifyListeners();
+    } catch (e, st) {
+      debugPrint('❌ Generate URN Error: $e');
+      debugPrintStack(stackTrace: st);
+    }
+  }
 
 
   void setSelectedCard(String? urn) {
@@ -557,6 +764,8 @@ class Production_Form_Provider extends ChangeNotifier {
         Wo_No_Doc: '',
         Round_Bar_Qty: 0,
         Size: "",
+        Heat_No: "",
+        No_Of_Piece: 0,
 
       ),
     );
@@ -593,6 +802,110 @@ class Production_Form_Provider extends ChangeNotifier {
     waitSeconds=0;
     addCount=0;
     errorMessage = "";
+  }
+
+  Future<void> generatebreakdownUrnNo(BuildContext context) async {
+    try {
+      final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
+      final token = await PreferenceManager.instance.getStringValue('Access_Token');
+      final coCode = await PreferenceManager.instance.getStringValue('CO_CODE');
+      final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL');
+      final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
+
+      final response = await apiService.post(
+        'Production/Generate_URN_No',
+        data: {
+          'O_URN_No': urnNo,
+          'User_Id': "1",
+          'Access_Token': token,
+          'Co_Code': coCode,
+          'Vary': "Breakdown",
+        },
+      );
+
+      final Map<String, dynamic> data =
+      response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
+
+      if (/*data['settings'] != null && */data['settings']['success'] == "0") {
+        final String msg = data['message'] ?? "Something went wrong";
+
+        showDialog(
+          context: context,
+          barrierDismissible: false, // user must press OK
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              // title: Text(
+              //   "Error",
+              //   style: TextStyle(
+              //     fontWeight: FontWeight.bold,
+              //     fontSize: 18,
+              //   ),
+              // ),
+              content: Text(
+                msg.toString(),
+                style: TextStyle(fontSize: 16),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close dialog
+                  },
+                  child: Text(
+                    "OK",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+
+        return;
+      }else{
+        var generatedUrn;
+        var generatedDoc_No;
+        var generatedCategory;
+        if (data['message'] != null && data['message'] is List) {
+
+          final merged = <String, dynamic>{};
+          for (var item in data['message']) {
+            if (item is Map<String, dynamic>) {
+              merged.addAll(item);
+            }
+          }
+
+          generatedUrn = merged['URN_No'] ?? '';
+          generatedDoc_No = merged['Doc_No'] ?? '';
+          generatedCategory = merged['Category'] ?? '';
+          await Navigator.push(context,
+              MaterialPageRoute(builder: (context) => Breakdown_Form_Screen(URN_No :generatedUrn,DocNo:generatedDoc_No,Category:generatedCategory,Status:"Draft",Mode:"Add")));
+        } else {
+          // generatedUrn = null;
+          // generatedDoc_No = null;
+          // generatedCategory = null;
+        }
+
+        debugPrint('✅ URN: $generatedUrn');
+        debugPrint('✅ Doc No: $generatedDoc_No');
+        debugPrint('✅ Category: $generatedCategory');
+
+        notifyListeners();
+      }
+
+      // 🧩 Merge all maps inside message[]
+
+
+
+    } catch (e, st) {
+      debugPrint('❌ Generate URN Error: $e');
+      debugPrintStack(stackTrace: st);
+    }
   }
 
 }

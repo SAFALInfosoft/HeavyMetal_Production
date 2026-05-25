@@ -12,7 +12,7 @@ import '../../../../Production/Production_Form/Model/URN_No_Model.dart';
 
 
 
-class Recovery_List_Provider extends ChangeNotifier {
+class Preventing_List_Provider extends ChangeNotifier {
   late double height;
   late double width;
 
@@ -28,7 +28,7 @@ class Recovery_List_Provider extends ChangeNotifier {
 
   var Operator_Role;
 
-  Recovery_List_Provider() {
+  Preventing_List_Provider() {
     final context = NavKey.navKey.currentState!.context;
     final size = MediaQuery.of(context).size;
     height = size.height;
@@ -37,8 +37,8 @@ class Recovery_List_Provider extends ChangeNotifier {
 
   Future<void> init(BuildContext context) async {
     Operator_Role = await PreferenceManager.instance.getStringValue('Operator_Role');
-    await getRecoveryList(context);
-    await getRecoveryEntryList(context);
+    await getPreventingPendingList(context);
+    await getPreventingEntryList(context);
   }
 
   final menuItems = [
@@ -59,8 +59,8 @@ class Recovery_List_Provider extends ChangeNotifier {
     },
   ];
 
-  List<Map<String, dynamic>> Recovery_List = [];
-  List<Map<String, dynamic>> Recovery_Entry_List = [];
+  List<Map<String, dynamic>> Preventing_Pending_List = [];
+  List<Map<String, dynamic>> Preventing_Entry_List = [];
 
   TextEditingController pendingSearchController = TextEditingController();
   TextEditingController entrySearchController = TextEditingController();
@@ -81,7 +81,7 @@ class Recovery_List_Provider extends ChangeNotifier {
 
   /// 🔍 FILTERED LISTS
   List<Map<String, dynamic>> get filteredPendingList {
-    return Recovery_List.where((item) {
+    return Preventing_Pending_List.where((item) {
       final urn = item["URN_No"].toString().toLowerCase();
       final doc = item["Doc_No"].toString().toLowerCase();
       final machine = item["MAchine_Name"].toString().toLowerCase();
@@ -95,7 +95,7 @@ class Recovery_List_Provider extends ChangeNotifier {
   }
 
   List<Map<String, dynamic>> get filteredEntryList {
-    return Recovery_Entry_List.where((item) {
+    return Preventing_Entry_List.where((item) {
       final urn = item["URN_No"].toString().toLowerCase();
       final doc = item["Doc_No"].toString().toLowerCase();
       final machine = item["MAchine_Name"].toString().toLowerCase();
@@ -138,7 +138,7 @@ class Recovery_List_Provider extends ChangeNotifier {
           'User_Id': "1",
           'Access_Token': token.toString(),
           'Co_Code': coCode,
-          'Vary': "Recovery",
+          'Vary': "Machine Maintenance",
         },
       );
 
@@ -221,7 +221,7 @@ class Recovery_List_Provider extends ChangeNotifier {
     }
   }
 
-  Future<void> Insert_Pending_TO_New(String OLD_URN_No) async {
+  Future<void> Insert_Pending_TO_New(String OLD_URN_No,String OLD_SR_No,) async {
     try {
       final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
       final token = await PreferenceManager.instance.getStringValue('Access_Token');
@@ -230,7 +230,7 @@ class Recovery_List_Provider extends ChangeNotifier {
       final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
 
       final response = await apiService.post(
-        'Recovery/Insert_Pending_TO_New',
+        'Preventing/Insert_Pending_TO_New_FOR_MM',
         data: {
           'CO_CODE': coCode.toString(),
           'O_URN_No': urnNo,
@@ -241,6 +241,7 @@ class Recovery_List_Provider extends ChangeNotifier {
           'Mode': "",
           'FieldString': "",
           'OLD_URN_No': OLD_URN_No,
+          'OLD_SR_No': OLD_SR_No,
         },
       );
 
@@ -275,7 +276,7 @@ class Recovery_List_Provider extends ChangeNotifier {
   }
 
 
-  Future<void> getRecoveryList(context) async {
+  Future<void> getPreventingPendingList(context) async {
     try {
       final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
       final token = await PreferenceManager.instance.getStringValue('Access_Token');
@@ -285,7 +286,7 @@ class Recovery_List_Provider extends ChangeNotifier {
 
 
       final response = await apiService.get(
-        'Recovery/Pending_Breakdown_To_Recovery',
+        'Preventing/Pending_MC_Registration_TO_MM',
         queryParameters: {
           'O_URN_No': urnNo.toString(),
           'Access_Token': Uri.encodeComponent(token).toString(),
@@ -300,34 +301,32 @@ class Recovery_List_Provider extends ChangeNotifier {
 
       if (data['settings']?['success'] == "1" && data['message'] is List) {
         // ✅ Fill Production_List
-        Recovery_List = (data['message'] as List)
+        Preventing_Pending_List = (data['message'] as List)
             .map((item) => {
           "URN_No": item["Urn_No"] ?? "",
-          "Doc_No": item["Doc No"] ?? "",
-          "Status": item["status"] ?? "",
-          "Doc_Date": item["Doc Date"] ?? "",
+          "Status": item["Status"] ?? "",
           "MAchine_Name": item["Machine Name"] ?? "",
-          "Category_Name": item["Category"] ?? "",
-          "Department": item["Department"] ?? "",
-          "Send to Department": item["Send to Department"] ?? "",
-          "Observations": item["Observations"] ?? "",
-          "Remarks": item["Remarks"] ?? "",
+          "Maintenance Date": item["Maintenance Date"] ?? "",
+          "Frequecy In Days": item["Frequecy In Days"] ?? "",
+          "Check List": item["Check List"] ?? "",
+          "Sr_No": item["Sr_No"] ?? "",
+          "Item_Sr_No": item["Item_Sr_No"] ?? "",
           "Breck_Down_Detail": item["Breck_Down_Detail"] ?? "",
           "Sub_Head": item["Sub_Head"] ?? "",
         })
             .toList();
 
-        debugPrint("✅ Recovery List Loaded: ${Recovery_List.length}");
+        debugPrint("✅ Recovery List Loaded: ${Preventing_Pending_List.length}");
       } else {
-        Recovery_List = [];
+        Preventing_Pending_List = [];
         debugPrint("⚠️ No valid data found or success != 1");
 
         // if (data['message'] == "User Id or Token is Invalid.") {
-          await PreferenceManager.instance.setBooleanValue("Login", false);
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (_) => const LoginPage()),
-          );
-          // clearMainForm();
+        await PreferenceManager.instance.setBooleanValue("Login", false);
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const LoginPage()),
+        );
+        // clearMainForm();
 
 
         // }
@@ -341,7 +340,7 @@ class Recovery_List_Provider extends ChangeNotifier {
   }
 
 
-  Future<void> getRecoveryEntryList(context) async {
+  Future<void> getPreventingEntryList(context) async {
     try {
       final urnNo = await PreferenceManager.instance.getStringValue('Operator_URN_No');
       final token = await PreferenceManager.instance.getStringValue('Access_Token');
@@ -350,7 +349,7 @@ class Recovery_List_Provider extends ChangeNotifier {
       final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
 
       final response = await apiService.get(
-        'Recovery/Get_Recovery_List',
+        'Preventing/Get_Machine_Maintenance_List',
         queryParameters: {
           'O_URN_No': urnNo.toString(),
           'URN_No': "",
@@ -366,7 +365,7 @@ class Recovery_List_Provider extends ChangeNotifier {
 
       if (data['settings']?['success'] == "1" && data['message'] is List) {
         // ✅ Fill Production_List
-        Recovery_Entry_List = (data['message'] as List)
+        Preventing_Entry_List = (data['message'] as List)
             .map((item) => {
           "URN_No": item["URN_No"] ?? "",
           "Doc_No": item["Doc_No"] ?? "",
@@ -377,9 +376,9 @@ class Recovery_List_Provider extends ChangeNotifier {
         })
             .toList();
 
-        debugPrint("✅ Recovery_Entry_List List Loaded: ${Recovery_Entry_List.length}");
+        debugPrint("✅ Recovery_Entry_List List Loaded: ${Preventing_Entry_List.length}");
       } else {
-        Recovery_Entry_List = [];
+        Preventing_Entry_List = [];
         debugPrint("⚠️ No valid data found or success != 1");
         await PreferenceManager.instance.setBooleanValue("Login", false);
         Navigator.of(context).pushReplacement(

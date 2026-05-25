@@ -148,25 +148,25 @@ class BreakDown_List extends StatelessWidget {
                             ),
 
                             /// 👉 SLIDE RIGHT (DELETE)
-                            endActionPane: ActionPane(
-                              motion: const DrawerMotion(),
-                              extentRatio: 0.4,
-                              children: [
-                                SlidableAction(
-                                  onPressed: (context) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content:
-                                          Text("Deleted ${item["URN_No"]}")),
-                                    );
-                                  },
-                                  backgroundColor: Colors.redAccent,
-                                  foregroundColor: Colors.white,
-                                  icon: Icons.delete,
-                                  label: 'Delete',
-                                ),
-                              ],
-                            ),
+                            // endActionPane: ActionPane(
+                            //   motion: const DrawerMotion(),
+                            //   extentRatio: 0.4,
+                            //   children: [
+                            //     SlidableAction(
+                            //       onPressed: (context) {
+                            //         ScaffoldMessenger.of(context).showSnackBar(
+                            //           SnackBar(
+                            //               content:
+                            //               Text("Deleted ${item["URN_No"]}")),
+                            //         );
+                            //       },
+                            //       backgroundColor: Colors.redAccent,
+                            //       foregroundColor: Colors.white,
+                            //       icon: Icons.delete,
+                            //       label: 'Delete',
+                            //     ),
+                            //   ],
+                            // ),
 
                             /// 👉 CARD CONTENT UI
                             child: Padding(

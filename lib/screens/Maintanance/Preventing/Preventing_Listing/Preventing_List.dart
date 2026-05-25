@@ -9,17 +9,17 @@ import '../../../../Utils/Constants.dart';
 import '../../../../widgets/InfoRowItem.dart';
 import '../../../Dashboard/Dashboard.dart';
 import '../../Maintanance_Menu/Maintanance_Menu.dart';
-import '../Recovery_Form/Recovery_Form_Screen.dart';
-import 'Provider/Recovery_List_Provider.dart';
+import '../Preventing_Form/Preventing_Form_Screen.dart';
+import 'Provider/Preventing_List_Provider.dart';
 
-class Recovery_List extends StatefulWidget {
-  const Recovery_List({Key? key}) : super(key: key);
+class Preventing_List extends StatefulWidget {
+  const Preventing_List({Key? key}) : super(key: key);
 
   @override
-  State<Recovery_List> createState() => _Recovery_ListState();
+  State<Preventing_List> createState() => _Preventing_ListState();
 }
 
-class _Recovery_ListState extends State<Recovery_List>
+class _Preventing_ListState extends State<Preventing_List>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -31,23 +31,23 @@ class _Recovery_ListState extends State<Recovery_List>
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) return;
 
-      final provider = context.read<Recovery_List_Provider>();
+      final provider = context.read<Preventing_List_Provider>();
 
       if (_tabController.index == 0) {
         // 🔹 Pending tab
-        provider.Recovery_List = [];
-        provider.getRecoveryList(context);
+        provider.Preventing_Pending_List = [];
+        provider.getPreventingPendingList(context);
       } else if (_tabController.index == 1) {
         // 🔹 Entry tab
-        provider.Recovery_Entry_List = [];
-        provider.getRecoveryEntryList(context);
+        provider.Preventing_Entry_List = [];
+        provider.getPreventingEntryList(context);
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final recoveryListProvider = context.watch<Recovery_List_Provider>();
+    final recoveryListProvider = context.watch<Preventing_List_Provider>();
 
     if (recoveryListProvider.isInitialized == false) {
       recoveryListProvider.init(context);
@@ -79,8 +79,8 @@ class _Recovery_ListState extends State<Recovery_List>
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () {
               recoveryListProvider.isInitialized = false;
-              recoveryListProvider.Recovery_List = [];
-              recoveryListProvider.Recovery_Entry_List = [];
+              recoveryListProvider.Preventing_Pending_List = [];
+              recoveryListProvider.Preventing_Entry_List = [];
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => Maintanance_Menu()),
@@ -88,7 +88,7 @@ class _Recovery_ListState extends State<Recovery_List>
             },
           ),
           title: Text(
-            "Recovery",
+            "Preventing",
             style: TextStyle(
               fontSize: recoveryListProvider.height * 0.03,
               fontWeight: FontWeight.bold,
@@ -101,16 +101,16 @@ class _Recovery_ListState extends State<Recovery_List>
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white70,
             onTap: (index) {
-              final provider = context.read<Recovery_List_Provider>();
+              final provider = context.read<Preventing_List_Provider>();
 
               if (index == 0) {
                 // 🔹 Pending tab
-                provider.Recovery_List=[];
-                provider.getRecoveryList(context);
+                provider.Preventing_Pending_List=[];
+                provider.getPreventingPendingList(context);
               } else if (index == 1) {
                 // 🔹 Entry tab
-                provider.Recovery_Entry_List=[];
-                provider.getRecoveryEntryList(context);
+                provider.Preventing_Entry_List=[];
+                provider.getPreventingEntryList(context);
               }
             },
             tabs: const [
@@ -123,9 +123,15 @@ class _Recovery_ListState extends State<Recovery_List>
         body: TabBarView(
           controller: _tabController,
           children: [
+
             /// PENDING TAB
-            Consumer<Recovery_List_Provider>(
+            Consumer<Preventing_List_Provider>(
               builder: (context, provider, _) {
+
+                if (_tabController.index != 0) {
+                  return const SizedBox();
+                }
+
                 return Column(
                   children: [
                     _buildSearchBox(
@@ -135,12 +141,14 @@ class _Recovery_ListState extends State<Recovery_List>
                     ),
                     Expanded(
                       child: provider.filteredPendingList.isEmpty
-                          ? Center(child: Text("No Pending Recovery Found"))
+                          ? const Center(
+                        child: Text("No Pending Recovery Found"),
+                      )
                           : _buildListView(
                         context,
                         provider,
                         provider.filteredPendingList,
-                        "pending"
+                        "pending",
                       ),
                     ),
                   ],
@@ -149,8 +157,13 @@ class _Recovery_ListState extends State<Recovery_List>
             ),
 
             /// ENTRY TAB
-            Consumer<Recovery_List_Provider>(
+            Consumer<Preventing_List_Provider>(
               builder: (context, provider, _) {
+
+                if (_tabController.index != 1) {
+                  return const SizedBox();
+                }
+
                 return Column(
                   children: [
                     _buildSearchBox(
@@ -159,7 +172,7 @@ class _Recovery_ListState extends State<Recovery_List>
                       provider.updateEntrySearch,
                     ),
                     Expanded(
-                      child: provider.isLoading ==true
+                      child: provider.isLoading == true
                           ? const Center(
                         child: CircularProgressIndicator(),
                       )
@@ -171,10 +184,9 @@ class _Recovery_ListState extends State<Recovery_List>
                         context,
                         provider,
                         provider.filteredEntryList,
-                        "entry"
+                        "entry",
                       ),
                     ),
-
                   ],
                 );
               },
@@ -184,54 +196,54 @@ class _Recovery_ListState extends State<Recovery_List>
 
 
         /// 🔹 FAB visible only on Entry tab
-        floatingActionButton: AnimatedBuilder(
-          animation: _tabController.animation!,
-          builder: (context, child) {
-            return _tabController.index == 1
-                ? Consumer<Recovery_List_Provider>(
-              builder: (context, provider, child) {
-                return FloatingActionButton(
-                  onPressed: () async {
-                    await provider.generateUrnNo(context);
-                    if(provider.generatedUrn!= null){
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => Recovery_Form_Screen(
-                            URN_No: provider.generatedUrn,
-                            DocNo: provider.generatedDoc_No,
-                            Category: provider.generatedCategory,
-                            Status: "Draft",
-                            Mode: "Add",
-                          ),
-                        ),
-                      );
-                      provider.isInitialized = false;
-                    }
-
-
-                  },
-                  backgroundColor: Colors.transparent,
-                  elevation: 0,
-                  child: Container(
-                    height: 60.0,
-                    width: 60.0,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: kMainGradient,
-                    ),
-                    child: const Icon(
-                      Icons.add,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ),
-                );
-              },
-            )
-                : const SizedBox.shrink();
-          },
-        ),
+        // floatingActionButton: AnimatedBuilder(
+        //   animation: _tabController.animation!,
+        //   builder: (context, child) {
+        //     return _tabController.index == 1
+        //         ? Consumer<Preventing_List_Provider>(
+        //       builder: (context, provider, child) {
+        //         return FloatingActionButton(
+        //           onPressed: () async {
+        //             await provider.generateUrnNo(context);
+        //             if(provider.generatedUrn!= null){
+        //               // await Navigator.push(
+        //               //   context,
+        //               //   MaterialPageRoute(
+        //               //     builder: (context) => Recovery_Form_Screen(
+        //               //       URN_No: provider.generatedUrn,
+        //               //       DocNo: provider.generatedDoc_No,
+        //               //       Category: provider.generatedCategory,
+        //               //       Status: "Draft",
+        //               //       Mode: "Add",
+        //               //     ),
+        //               //   ),
+        //               // );
+        //               provider.isInitialized = false;
+        //             }
+        //
+        //
+        //           },
+        //           backgroundColor: Colors.transparent,
+        //           elevation: 0,
+        //           child: Container(
+        //             height: 60.0,
+        //             width: 60.0,
+        //             decoration: const BoxDecoration(
+        //               shape: BoxShape.circle,
+        //               gradient: kMainGradient,
+        //             ),
+        //             child: const Icon(
+        //               Icons.add,
+        //               color: Colors.white,
+        //               size: 28,
+        //             ),
+        //           ),
+        //         );
+        //       },
+        //     )
+        //         : const SizedBox.shrink();
+        //   },
+        // ),
       ),
     );
   }
@@ -265,7 +277,7 @@ class _Recovery_ListState extends State<Recovery_List>
 
   /// 🔹 Reusable ListView Builder
   Widget _buildListView(
-      BuildContext context, Recovery_List_Provider provider, List<dynamic> list,String type) {
+      BuildContext context, Preventing_List_Provider provider, List<dynamic> list,String type) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10),
       child: ListView.separated(
@@ -281,7 +293,7 @@ class _Recovery_ListState extends State<Recovery_List>
             ),
             child: Slidable(
               key: ValueKey(item["URN_No"]),
-              enabled: provider.Operator_Role != "Admin",
+              // enabled: provider.Operator_Role != "Admin",
               closeOnScroll: true,
               startActionPane: ActionPane(
                 motion: const DrawerMotion(),
@@ -292,7 +304,7 @@ class _Recovery_ListState extends State<Recovery_List>
                       BuildContext currentContext = context; // capture the parent context
                       if (type == "pending") {
                         await provider.generateUrnNo(context);
-                        await provider.Insert_Pending_TO_New(item["URN_No"]);
+                        await provider.Insert_Pending_TO_New(item["URN_No"],item["Item_Sr_No"],);
 
                         // Use currentContext (not context from builder)
                         if (!currentContext.mounted) return;
@@ -301,11 +313,11 @@ class _Recovery_ListState extends State<Recovery_List>
                           Navigator.push(
                             currentContext,
                             MaterialPageRoute(
-                              builder: (_) => Recovery_Form_Screen(
+                              builder: (_) => Preventing_Form_Screen(
                                 URN_No: provider.generatedUrn.toString(),
-                                DocNo: item["Doc_No"],
-                                Category: item["Category_Name"],
-                                Status: item["Status"],
+                                DocNo: provider.generatedDoc_No.toString(),
+                                Category: provider.generatedCategory.toString(),
+                                Status: "Draft",
                                 Mode: "Edit",
                               ),
                             ),
@@ -316,7 +328,7 @@ class _Recovery_ListState extends State<Recovery_List>
                         Navigator.push(
                           currentContext,
                           MaterialPageRoute(
-                            builder: (_) => Recovery_Form_Screen(
+                            builder: (_) => Preventing_Form_Screen(
                               URN_No: item["URN_No"],
                               DocNo: item["Doc_No"],
                               Category: item["Category_Name"],
@@ -364,7 +376,7 @@ class _Recovery_ListState extends State<Recovery_List>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          item["Doc_No"],
+                          item["URN_No"],
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -386,26 +398,38 @@ class _Recovery_ListState extends State<Recovery_List>
                       ],
                     ),
                     const Divider(height: 15),
-                    InfoPair(label: "URN No", value: item["URN_No"]),
+                    // InfoPair(label: "URN No", value: item["URN_No"]),
                     InfoPair(label: "Machine Name", value: item["MAchine_Name"]),
-                    InfoPair(label: "Doc Date", value: item["Doc_Date"]),
                     Visibility(
-                      visible: type=="pending",
-                        child: InfoPair(label: "Department", value: type=="pending"?item["Department"]:"")),
+                        visible: type=="entry",
+                        child: InfoPair(label: "Doc No", value: type=="entry"?item["Doc_No"].toString():"")),
+
                     Visibility(
-                      visible: type=="pending",
-                        child: InfoPair(label: "Send to", value: type=="pending"?item["Send to Department"]:"")),
+                        visible: type=="entry",
+                        child: InfoPair(label: "Category Name", value: type=="entry"?item["Category_Name"].toString():"")),
+
+                    if (type == "pending")
+                      InfoPair(
+                        label: "Maintenance Date",
+                        value: item["Maintenance Date"],
+                      ),
                     Visibility(
                         visible: type=="pending",
-                        child: InfoPair(label: "Break Down Detail", value: type=="pending"?item["Breck_Down_Detail"]:"")),
-
+                        child: InfoPair(label: "Frequecy In Days", value: type=="pending"?item["Frequecy In Days"].toString():"")),
                     Visibility(
-                      visible: type=="pending",
-                        child: InfoPair(label: "Sub_Head", value: type=="pending"?item["Sub_Head"]:"")),
-                    Visibility(
-                      visible: type=="pending",
-                        child: InfoPair(label: "Remarks", value: type=="pending"?item["Remarks"]:"")),
-
+                        visible: type=="pending",
+                        child: InfoPair(label: "Check List", value: type=="pending"?item["Check List"]:"")),
+                    // Visibility(
+                    //     visible: type=="pending",
+                    //     child: InfoPair(label: "Break Down Detail", value: type=="pending"?item["Breck_Down_Detail"]:"")),
+                    //
+                    // Visibility(
+                    //     visible: type=="pending",
+                    //     child: InfoPair(label: "Sub_Head", value: type=="pending"?item["Sub_Head"]:"")),
+                    // Visibility(
+                    //     visible: type=="pending",
+                    //     child: InfoPair(label: "Remarks", value: type=="pending"?item["Remarks"]:"")),
+                    //
 
                   ],
                 ),

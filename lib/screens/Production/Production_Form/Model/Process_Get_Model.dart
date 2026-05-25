@@ -34,12 +34,14 @@ class ProcessItem {
   final String processName;
   final String vary;
   final String Sr_No;
+  final String QualityCheck;
 
   ProcessItem({
     required this.locationUrnNo,
     required this.processName,
     required this.vary,
     required this.Sr_No,
+    required this.QualityCheck,
   });
 
   factory ProcessItem.fromJson(Map<String, dynamic> json) {
@@ -48,6 +50,7 @@ class ProcessItem {
       processName: json['Process_Name'] ?? '',
       vary: json['vary'] ?? '',
       Sr_No: json['Sr_No'] ?? '',
+      QualityCheck: json['QualityCheck'] ?? '',
     );
   }
 }

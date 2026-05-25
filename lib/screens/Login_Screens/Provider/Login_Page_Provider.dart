@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:nb_utils/nb_utils.dart';
 
 import '../../../GlobalComponents/PreferenceManager.dart';
 import '../../../GlobalComponents/api_service.dart';
@@ -12,8 +13,6 @@ class LoginPageProvider extends ChangeNotifier{
 
   TextEditingController mobileNoController = TextEditingController();
   TextEditingController MPinController = TextEditingController();
-
-
 
 
   /// Call this from a widget to capture screen size safely
@@ -29,7 +28,7 @@ class LoginPageProvider extends ChangeNotifier{
     final baseUrl = await PreferenceManager.instance.getStringValue('Base_URL'); // ✅ await here
     final NewApiService apiService = NewApiService(defaultBaseUrl: baseUrl);
     final payload = {'Mobile_No': mobileNo, 'MPIN': mpin};
-
+    log(payload);
     try {
       final response = await apiService.post('Login/LogIn_Check', data: payload);
 
@@ -37,6 +36,7 @@ class LoginPageProvider extends ChangeNotifier{
       response is String ? jsonDecode(response) : Map<String, dynamic>.from(response);
 
       final loginResponse = LoginResponse.fromJson(data);
+      log("loginResponse.settings.success====>${loginResponse.settings.success }");
 
       if (loginResponse.settings.success == '1' &&
           loginResponse.message.isNotEmpty) {
@@ -48,9 +48,9 @@ class LoginPageProvider extends ChangeNotifier{
         await PreferenceManager.instance.setStringValue('CO_CODE', msg.coCode);
         await PreferenceManager.instance.setBooleanValue("Login", true);
 
-        return true; // ✅ indicate success
+        return true;
       }
-      return false; // failed
+      return false;
     } catch (e) {
       debugPrint('❌ Login Error: $e');
       return false;

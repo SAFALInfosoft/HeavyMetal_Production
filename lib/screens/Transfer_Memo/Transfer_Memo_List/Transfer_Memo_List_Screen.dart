@@ -139,25 +139,25 @@ class Transfer_Memo_List extends StatelessWidget {
                             ],
                           ),
 
-                          endActionPane: ActionPane(
-                            motion: DrawerMotion(),
-                            extentRatio: 0.4,
-                            children: [
-                              SlidableAction(
-                                onPressed: (context) {
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(SnackBar(
-                                    content:
-                                    Text("Deleted ${item["URN_No"]}"),
-                                  ));
-                                },
-                                backgroundColor: Colors.redAccent,
-                                foregroundColor: Colors.white,
-                                icon: Icons.delete,
-                                label: 'Delete',
-                              ),
-                            ],
-                          ),
+                          // endActionPane: ActionPane(
+                          //   motion: DrawerMotion(),
+                          //   extentRatio: 0.4,
+                          //   children: [
+                          //     SlidableAction(
+                          //       onPressed: (context) {
+                          //         ScaffoldMessenger.of(context)
+                          //             .showSnackBar(SnackBar(
+                          //           content:
+                          //           Text("Deleted ${item["URN_No"]}"),
+                          //         ));
+                          //       },
+                          //       backgroundColor: Colors.redAccent,
+                          //       foregroundColor: Colors.white,
+                          //       icon: Icons.delete,
+                          //       label: 'Delete',
+                          //     ),
+                          //   ],
+                          // ),
 
                           child: Padding(
                             padding: const EdgeInsets.all(12),

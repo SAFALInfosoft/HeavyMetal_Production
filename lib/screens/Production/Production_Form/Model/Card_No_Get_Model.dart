@@ -43,6 +43,8 @@ class ProcessCardMessage {
   final String Wo_No_Doc;
   final double Round_Bar_Qty;
   final String Size;
+  final String Heat_No;
+  final double No_Of_Piece;
 
   ProcessCardMessage({
     required this.processCardUrnNo,
@@ -53,6 +55,8 @@ class ProcessCardMessage {
     required this.Wo_No_Doc,
     required this.Round_Bar_Qty,
     required this.Size,
+    required this.Heat_No,
+    required this.No_Of_Piece,
   });
 
   factory ProcessCardMessage.fromJson(Map<String, dynamic> json) {
@@ -65,6 +69,8 @@ class ProcessCardMessage {
       qty: (json['Qty'] is num) ? (json['Qty'] as num).toDouble() : 0.0,
       Round_Bar_Qty: (json['Round_Bar_Qty'] is num) ? (json['Round_Bar_Qty'] as num).toDouble() : 0.0,
       Size: json['Size'] ,
+      Heat_No: json['Heat_No'] ,
+      No_Of_Piece: json['No_Of_Piece'] ,
     );
   }
 
@@ -76,5 +82,7 @@ class ProcessCardMessage {
     'Qty': qty,
     'Round_Bar_Qty': Round_Bar_Qty,
     'Size': Size,
+    'Heat_No': Heat_No,
+    'No_Of_Piece': No_Of_Piece,
   };
 }
