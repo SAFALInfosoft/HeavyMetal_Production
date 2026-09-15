@@ -430,49 +430,49 @@ class Preventing_Form_Screen extends StatelessWidget {
                                   ),
                                 ),
 
-                                const SizedBox(height: 8),
-
-                                GestureDetector(
-                                  onTap: () async {
-                                    final provider =
-                                    Provider.of<Preventing_Form_Provider>(context,
-                                        listen: false);
-
-                                    // if (provider.Department_List.isEmpty) {
-                                    provider.isLoading = true;
-                                    provider.notifyListeners();
-
-                                    await provider.fetchDepartmentListFromAPI(
-                                        URN_No.toString());
-
-                                    provider.isLoading = false;
-                                    provider.notifyListeners();
-                                    // }
-
-                                    if (provider.Department_List.isNotEmpty) {
-                                      showCategoryBottomSheet(
-                                          context,
-                                          provider.Department_List,
-                                          "Department",
-                                          URN_No.toString(),"Machine Maintenance");
-                                    }
-                                  },
-                                  child: AbsorbPointer(
-                                    absorbing: true, // prevent manual typing
-                                    child: TextFormField(
-                                      readOnly: true,
-                                      decoration:
-                                      customInputDecoration("Department").copyWith(
-                                        suffixIcon: const Icon(Icons.arrow_drop_down),
-                                      ),
-                                      controller: TextEditingController(
-                                          text: Provider.of<Preventing_Form_Provider>(
-                                              context)
-                                              .selectedDepartment ??
-                                              ""),
-                                    ),
-                                  ),
-                                ),
+                                // const SizedBox(height: 8),
+                                //
+                                // GestureDetector(
+                                //   onTap: () async {
+                                //     final provider =
+                                //     Provider.of<Preventing_Form_Provider>(context,
+                                //         listen: false);
+                                //
+                                //     // if (provider.Department_List.isEmpty) {
+                                //     provider.isLoading = true;
+                                //     provider.notifyListeners();
+                                //
+                                //     await provider.fetchDepartmentListFromAPI(
+                                //         URN_No.toString());
+                                //
+                                //     provider.isLoading = false;
+                                //     provider.notifyListeners();
+                                //     // }
+                                //
+                                //     if (provider.Department_List.isNotEmpty) {
+                                //       showCategoryBottomSheet(
+                                //           context,
+                                //           provider.Department_List,
+                                //           "Department",
+                                //           URN_No.toString(),"Machine Maintenance");
+                                //     }
+                                //   },
+                                //   child: AbsorbPointer(
+                                //     absorbing: true, // prevent manual typing
+                                //     child: TextFormField(
+                                //       readOnly: true,
+                                //       decoration:
+                                //       customInputDecoration("Department").copyWith(
+                                //         suffixIcon: const Icon(Icons.arrow_drop_down),
+                                //       ),
+                                //       controller: TextEditingController(
+                                //           text: Provider.of<Preventing_Form_Provider>(
+                                //               context)
+                                //               .selectedDepartment ??
+                                //               ""),
+                                //     ),
+                                //   ),
+                                // ),
 
 
                               ],
@@ -824,13 +824,14 @@ class Preventing_Form_Screen extends StatelessWidget {
                   Map<String, dynamic> fieldString = {
                     "Doc_Date": provider.dateController.text,
                     "Machine_Name": provider.selectedMachine_ID,
-                    "Department": provider.selectedDepartment_ID,
+                    "Department": "",
                     "Checklist_Name": "",
                     "Frequency_start_Date": "",
                     "Frequency_In_Days": "",
                     "Work_Start": "",
                     "Work_End": "",
                     "Next_Due_Date": "",
+                    "Difference_Time": "",
                   };
 
                   print("📦 Field String: $fieldString");
@@ -926,6 +927,48 @@ class Preventing_Form_Screen extends StatelessWidget {
                     Provider.of<Preventing_Form_Provider>(context,
                         listen: false);
 
+                    // if (provider.Department_List.isEmpty) {
+                    provider.isLoading = true;
+                    provider.notifyListeners();
+
+                    await provider.fetchDepartmentListFromAPI(
+                        URN_No.toString());
+
+                    provider.isLoading = false;
+                    provider.notifyListeners();
+                    // }
+
+                    if (provider.Department_List.isNotEmpty) {
+                      showCategoryBottomSheet(
+                          context,
+                          provider.Department_List,
+                          "Department",
+                          URN_No.toString(),"Machine Maintenance");
+                    }
+                  },
+                  child: AbsorbPointer(
+                    absorbing: true, // prevent manual typing
+                    child: TextFormField(
+                      readOnly: true,
+                      decoration:
+                      customInputDecoration("Department").copyWith(
+                        suffixIcon: const Icon(Icons.arrow_drop_down),
+                      ),
+                      controller: TextEditingController(
+                          text: Provider.of<Preventing_Form_Provider>(
+                              context)
+                              .selectedDepartment ??
+                              ""),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: () async {
+                    final provider =
+                    Provider.of<Preventing_Form_Provider>(context,
+                        listen: false);
+
                     // if (provider.Sub_Head_Name_List.isEmpty) {
                     provider.isLoading = true;
                     provider.notifyListeners();
@@ -1005,10 +1048,13 @@ class Preventing_Form_Screen extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 GestureDetector(
-                  onTap: () => provider.pickDateTime(
-                    context,
-                    provider.workDoneController,
-                  ),
+                  onTap: () async {
+                    await provider.pickDateTime(
+                      context,
+                      provider.workDoneController,
+                    );
+                    provider.calculateDifferenceMinutes();
+                  },
                   child: AbsorbPointer(
                     child: TextField(
                       controller: provider.workDoneController,
@@ -1023,10 +1069,13 @@ class Preventing_Form_Screen extends StatelessWidget {
                 const SizedBox(height: 8),
 
                 GestureDetector(
-                  onTap: () => provider.pickDate(
-                    context,
-                    provider.nextDueDateController,
-                  ),
+                  onTap: () async {
+                    await provider.pickDate(
+                      context,
+                      provider.nextDueDateController,
+                    );
+                    provider.calculateDifferenceMinutes();
+                  } ,
                   child: AbsorbPointer(
                     child: TextField(
                       controller: provider.nextDueDateController,
@@ -1035,6 +1084,16 @@ class Preventing_Form_Screen extends StatelessWidget {
                         suffixIcon: const Icon(Icons.calendar_month),
                       ),
                     ),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                TextField(
+                  controller: provider.differenceMinController,
+                  readOnly: true,
+                  decoration: customInputDecoration(
+                    "Difference Time (Min)",
                   ),
                 ),
 
@@ -1055,7 +1114,7 @@ class Preventing_Form_Screen extends StatelessWidget {
                         "Work_Start": provider.workStartController.text,
                         "Work_End": provider.workDoneController.text,
                         "Next_Due_Date": provider.nextDueDateController.text,
-
+                        "Difference_Time": provider.differenceMinController.text,
                       };
 
                       print("📦 Field String: $fieldString");

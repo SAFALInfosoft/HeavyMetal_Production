@@ -125,6 +125,9 @@ class _Preventing_ListState extends State<Preventing_List>
           children: [
 
             /// PENDING TAB
+            /// =============================================================
+            /// PENDING TAB
+            /// =============================================================
             Consumer<Preventing_List_Provider>(
               builder: (context, provider, _) {
 
@@ -134,16 +137,186 @@ class _Preventing_ListState extends State<Preventing_List>
 
                 return Column(
                   children: [
+
+                    // =========================================================
+                    // SEARCH
+                    // =========================================================
                     _buildSearchBox(
                       provider.pendingSearchController,
                       "Search Pending...",
                       provider.updatePendingSearch,
                     ),
+
+                    // =========================================================
+                    // FILTER SECTION
+                    // =========================================================
+                    // =========================================================
+// COMPACT FILTERS
+// =========================================================
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 2, 10, 4),
+                      child: Row(
+                        children: [
+
+                          // =====================================================
+                          // FREQUENCY FILTER
+                          // =====================================================
+                          Expanded(
+                            child: SizedBox(
+                              height: 42,
+                              child: DropdownButtonFormField<String>(
+                                value: provider.selectedFrequencyFilter,
+                                isExpanded: true,
+                                isDense: true,
+
+                                decoration: InputDecoration(
+                                  labelText: "Frequency",
+                                  labelStyle: const TextStyle(
+                                    fontSize: 12,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 5,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey.shade300,
+                                    ),
+                                  ),
+                                ),
+
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black87,
+                                ),
+
+                                items: provider.frequencyFilterOptions
+                                    .map(
+                                      (value) => DropdownMenuItem<String>(
+                                    value: value,
+                                    child: Text(
+                                      value,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                )
+                                    .toList(),
+
+                                onChanged: provider.updateFrequencyFilter,
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(width: 6),
+
+                          // =====================================================
+                          // UNIT FILTER
+                          // =====================================================
+                          Expanded(
+                            child: SizedBox(
+                              height: 42,
+                              child: DropdownButtonFormField<String>(
+                                value: provider.selectedUnitFilter,
+                                isExpanded: true,
+                                isDense: true,
+
+                                decoration: InputDecoration(
+                                  labelText: "Unit",
+                                  labelStyle: const TextStyle(
+                                    fontSize: 12,
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 5,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                      color: Colors.grey.shade300,
+                                    ),
+                                  ),
+                                ),
+
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black87,
+                                ),
+
+                                items: provider.unitFilterOptions
+                                    .map(
+                                      (unit) => DropdownMenuItem<String>(
+                                    value: unit,
+                                    child: Text(
+                                      unit,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                )
+                                    .toList(),
+
+                                onChanged: provider.updateUnitFilter,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+// =========================================================
+// COUNT + CLEAR
+// =========================================================
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 2,
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            "${provider.filteredPendingList.length} Records",
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+
+                          const Spacer(),
+
+                          if (provider.selectedFrequencyFilter != "All" ||
+                              provider.selectedUnitFilter != "All")
+                            InkWell(
+                              onTap: () {
+                                provider.updateFrequencyFilter("All");
+                                provider.updateUnitFilter("All");
+                              },
+                              child: const Text(
+                                "Clear Filters",
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.redAccent,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 2),
+
+                    // =========================================================
+                    // LIST
+                    // =========================================================
                     Expanded(
                       child: provider.filteredPendingList.isEmpty
-                          ? const Center(
-                        child: Text("No Pending Recovery Found"),
-                      )
+                          ? _buildEmptyPendingState(provider)
                           : _buildListView(
                         context,
                         provider,
@@ -437,6 +610,65 @@ class _Preventing_ListState extends State<Preventing_List>
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildEmptyPendingState(
+      Preventing_List_Provider provider,
+      ) {
+    final bool hasFilter =
+        provider.selectedFrequencyFilter != "All" ||
+            provider.selectedUnitFilter != "All" ||
+            provider.pendingSearch.isNotEmpty;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(30),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              hasFilter
+                  ? Icons.filter_alt_off_outlined
+                  : Icons.inbox_outlined,
+              size: 55,
+              color: Colors.grey.shade400,
+            ),
+
+            const SizedBox(height: 12),
+
+            Text(
+              hasFilter
+                  ? "No records match your filters"
+                  : "No Pending Recovery Found",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade700,
+              ),
+            ),
+
+            if (hasFilter) ...[
+              const SizedBox(height: 12),
+
+              TextButton.icon(
+                onPressed: () {
+                  provider.pendingSearchController.clear();
+                  provider.updatePendingSearch("");
+                  provider.updateFrequencyFilter("All");
+                  provider.updateUnitFilter("All");
+                },
+                icon: const Icon(
+                  Icons.refresh,
+                  size: 18,
+                ),
+                label: const Text("Clear Filters"),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }

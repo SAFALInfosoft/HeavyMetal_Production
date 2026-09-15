@@ -64,6 +64,8 @@ class Preventing_Form_Provider extends ChangeNotifier {
   final TextEditingController SuggestionController = TextEditingController();
   final TextEditingController DescriptionController = TextEditingController();
   final TextEditingController QuantityController = TextEditingController();
+  final TextEditingController differenceMinController = TextEditingController();
+
 
   final TextEditingController frequencyStartDateController =
   TextEditingController();
@@ -1410,8 +1412,8 @@ class Preventing_Form_Provider extends ChangeNotifier {
           selectedCategory = data['message'][0]['Category_Name'];
           selectedMachine = data['message'][0]['MAchine_Name'];
           selectedMachine_ID = data['message'][0]['Machine_CODE'];
-          selectedDepartment = data['message'][0]['Department_name'];
-          selectedDepartment_ID = data['message'][0]['Department_URN_No'];
+          // selectedDepartment = data['message'][0]['Department_name'];
+          // selectedDepartment_ID = data['message'][0]['Department_URN_No'];
           Status = data['message'][0]['Status'];
 
 
@@ -1429,12 +1431,15 @@ class Preventing_Form_Provider extends ChangeNotifier {
           }
         }else{
 
+          selectedDepartment = data['message'][0]['Department_name'];
+          selectedDepartment_ID = data['message'][0]['Department_URN_No'];
           selectedChecklist_ID = data['message'][0]['checklist_CODE'];
           selectedChecklist_Name = data['message'][0]['checklist_name'];
           frequencyStartDateController.text= data['message'][0]['Frequency_start_Date'];
           Frequency_In_DaysController.text= data['message'][0]['Frequency_In_Days'].toString();
           workStartController.text= data['message'][0]['Work_Start'];
           workDoneController.text= data['message'][0]['Work_End'];
+          differenceMinController.text= data['message'][0]['Difference_Time'].toString();
           // nextDueDateController.text= data['message'][0]['next_due_date'];
           if (frequencyStartDateController.text.isNotEmpty) {
 
@@ -1505,5 +1510,26 @@ class Preventing_Form_Provider extends ChangeNotifier {
         "${finalDateTime.minute.toString().padLeft(2, '0')}";
 
     notifyListeners();
+  }
+
+  void calculateDifferenceMinutes() {
+    try {
+      if (workStartController.text.isEmpty ||
+          workDoneController.text.isEmpty) {
+        differenceMinController.text = "";
+        return;
+      }
+
+      final start = DateTime.parse(workStartController.text);
+      final end = DateTime.parse(workDoneController.text);
+
+      final diff = end.difference(start).inMinutes;
+
+      differenceMinController.text = diff.toString();
+
+      notifyListeners();
+    } catch (e) {
+      print("Error calculating difference: $e");
+    }
   }
 }
